@@ -1,0 +1,10 @@
+bin/
+obj/
+installer/payload/
+installer/setup/
+installer/single/
+installer/complete/
+installer/layout-fixed/
+installer/uninstaller/publish/
+*.pdb
+
