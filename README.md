@@ -1,39 +1,47 @@
 ![Yangi lotin klaviatura](assets/cover.png)
 
-# Yangi lotin klaviatura
+# Yangi lotin klaviatura · 1.1.0
 
-Windows utility for working with the updated Uzbek Latin alphabet. · Программа для работы с новым узбекским латинским алфавитом. · Yangi o‘zbek lotin alifbosida yozishga yordam beruvchi Windows dasturi.
+Windows uchun yangi o‘zbek lotin klaviaturasi · Узбекская латинская клавиатура для Windows · Updated Uzbek Latin keyboard for Windows.
 
-[Download / Скачать / Yuklab olish](../../releases)
-
-## English
-
-Convert existing text using **sh → ş, ch → ç, o‘ → ö, g‘ → ğ**. The app also offers automatic replacement while typing when the Uzbek Latin input language is active. English and Russian interface languages are available.
-
-Download the installer from Releases. It installs for the current user, creates a desktop shortcut and offers optional startup with Windows. Use **Uninstall.exe** in the installation folder to remove it. A portable build is available in `dist/portable`.
-
-Requires Windows and .NET Desktop Runtime 8. This is a beta: installation and automatic input in other applications have not been fully tested. Review converted text, especially borrowed words.
+- [Установщик / Installer / O‘rnatuvchi](dist/Yangi%20lotin%20klaviatura%20Setup.exe?raw=true)
+- [Portable ZIP](dist/Yangi-Lotin-Portable.zip?raw=true)
+- [Releases](../../releases)
 
 ## Русский
 
-Преобразуйте готовый текст по правилам **sh → ş, ch → ç, o‘ → ö, g‘ → ğ**. Программа также предлагает автоматическую замену при наборе с активной узбекской латинской раскладкой. Интерфейс доступен на узбекском и русском языках.
+Автоматическая замена **sh → ş, ch → ç, o‘ → ö, g‘ → ğ** при активной узбекской латинской раскладке Windows и преобразование готового текста. Интерфейс на узбекском и русском. Настоящие компоненты Liquid Glass работают внутри WebView2; светлая и тёмная темы используют локальные фоны с узбекскими мотивами.
 
-Скачайте установщик в разделе Releases. Он устанавливает программу для текущего пользователя, создаёт ярлык на рабочем столе и предлагает включить автозапуск. Для удаления запустите **Uninstall.exe** в папке программы. Portable-версия находится в `dist/portable`.
+Требуются **Windows x64**, **.NET Desktop Runtime 8** и **Microsoft Edge WebView2 Evergreen Runtime**. Установщик устанавливает программу для текущего пользователя, создаёт ярлык и предлагает автозапуск. Закройте программу перед обновлением. Для удаления используйте список установленных приложений Windows или Uninstall.exe в папке установки.
 
-Требуются Windows и .NET Desktop Runtime 8. Это бета-версия: установка и автоматический ввод в других приложениях полностью не проверены. Проверяйте преобразованный текст, особенно заимствованные слова.
+Portable ZIP нужно распаковать целиком: папки WebUI и runtimes должны оставаться рядом с EXE. Интернет для интерфейса не требуется. При закрытии окна автоматическая замена прекращается.
 
 ## O‘zbekcha
 
-Tayyor matndagi **sh → ş, ch → ç, o‘ → ö, g‘ → ğ** birikmalarini yangi harflarga aylantiring. O‘zbek lotin kiritish tili faol bo‘lganda, dastur yozish davomida avtomatik almashtirishni ham taklif qiladi. Interfeys o‘zbek va rus tillarida.
+**sh → ş, ch → ç, o‘ → ö, g‘ → ğ** birikmalarini avtomatik almashtiring yoki tayyor matnni o‘zgartiring. Avtomatik almashtirish uchun Windows tizimida o‘zbek lotin kiritish tilini tanlang. Interfeys o‘zbek va rus tillarida. Yorug‘ va qorong‘i mavzular mavjud.
 
-O‘rnatuvchini Releases bo‘limidan yuklab oling. Dastur joriy foydalanuvchi uchun o‘rnatiladi, ish stolida yorliq yaratiladi va Windows bilan avtomatik ishga tushirish imkoniyati taklif qilinadi. O‘chirish uchun dastur papkasidagi **Uninstall.exe** faylini ishga tushiring. Portable versiya `dist/portable` papkasida.
+Windows x64, .NET Desktop Runtime 8 va Microsoft Edge WebView2 Runtime kerak. Yangilashdan oldin dasturni yoping. Portable ZIP arxivini to‘liq oching; WebUI va runtimes papkalarini EXE yonida saqlang. Oyna yopilganda almashtirish to‘xtaydi.
 
-Windows va .NET Desktop Runtime 8 talab qilinadi. Bu beta-versiya: o‘rnatish va boshqa dasturlarda avtomatik kiritish to‘liq sinovdan o‘tmagan. Aylantirilgan matnni, ayniqsa o‘zlashma so‘zlarni tekshiring.
+## English
+
+Automatic replacement while typing with the Uzbek Latin Windows input language, plus native conversion of existing text. Uzbek/Russian interface. React and the actual @zakisheriff/liquid-glass library are hosted locally in WebView2; the keyboard engine remains C#.
+
+Requires Windows x64, .NET 8 Desktop Runtime and Microsoft Edge WebView2 Evergreen Runtime. The installer supports a per-user installation, desktop shortcut, optional startup and uninstall registration. Close the app before updating. Extract the entire portable ZIP before running it.
+
+## Screenshots
+
+[Light theme](assets/interface-light.png) · [Dark theme](assets/interface-dark.png)
 
 ## Build
 
+Install Node.js 18+ and .NET SDK 8 with Windows Desktop support. Close dev/preview servers, then run:
+
 ```powershell
-dotnet build UzbekNewKeyboard.csproj -c Release
+./build-release.ps1
 ```
 
-The build requires the .NET 8 SDK with Windows Desktop support.
+This builds the React UI, native host, uninstaller, embedded installer payload and both distributions under dist/. See [build details and verification limits](GLASS-BUILD.md).
+
+Runtime downloads: [.NET Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0) · [WebView2](https://developer.microsoft.com/microsoft-edge/webview2/).
+
+Release builds and headless UI checks pass. The production page and bridge were also checked in an invisible real WebView2 host. Desktop installation and global input in other applications have not been fully tested. Review converted text, especially borrowed words.

@@ -15,8 +15,19 @@ public static class Program {
    using(var run=Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run",true)) { if(string.Equals(run?.GetValue("YangiLotinKlaviatura") as string,"\""+exe+"\"",StringComparison.OrdinalIgnoreCase)) run?.DeleteValue("YangiLotinKlaviatura",false); }
    string shortcut=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),"Yangi lotin klaviatura.lnk");
    if(File.Exists(shortcut)) { var t=Type.GetTypeFromProgID("WScript.Shell"); if(t!=null) { dynamic shell=Activator.CreateInstance(t)!; dynamic link=shell.CreateShortcut(shortcut); string target=link.TargetPath; if(string.Equals(target,exe,StringComparison.OrdinalIgnoreCase)) File.Delete(shortcut); } }
-   string[] files={"Yangi lotin klaviatura.exe","Yangi lotin klaviatura.dll","Yangi lotin klaviatura.deps.json","Yangi lotin klaviatura.runtimeconfig.json","Yangi lotin klaviatura.pdb"};
+   string[] files={"Yangi lotin klaviatura.exe","Yangi lotin klaviatura.dll","Yangi lotin klaviatura.deps.json","Yangi lotin klaviatura.runtimeconfig.json","Yangi lotin klaviatura.pdb","Microsoft.Web.WebView2.Core.dll","Microsoft.Web.WebView2.Wpf.dll","Microsoft.Web.WebView2.WinForms.dll","Microsoft.Web.WebView2.Core.xml","Microsoft.Web.WebView2.Wpf.xml","Microsoft.Web.WebView2.WinForms.xml","README.md"};
    foreach(string name in files) { string path=Path.Combine(root,name); if(File.Exists(path)) File.Delete(path); }
+   foreach(string name in new[]{"WebUI","runtimes"}) {
+    string path=Path.GetFullPath(Path.Combine(root,name));
+    if (!path.StartsWith(Path.GetFullPath(root)+Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase)) throw new IOException("Недопустимый путь удаления.");
+    if(Directory.Exists(path)) Directory.Delete(path,(File.GetAttributes(path)&FileAttributes.ReparsePoint)==0);
+   }
+   using(var uninstall=Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall",true)) {
+    using var own=uninstall?.OpenSubKey("YangiLotinKlaviatura");
+    bool matches=string.Equals(own?.GetValue("InstallLocation") as string,root,StringComparison.OrdinalIgnoreCase);
+    own?.Close();
+    if(matches) uninstall?.DeleteSubKeyTree("YangiLotinKlaviatura",false);
+   }
    string current=Environment.ProcessPath ?? throw new InvalidOperationException("Не найден файл удаления.");
    string quotedCurrent=current.Replace("'","''"); string quotedRoot=root.Replace("'","''"); int pid=Environment.ProcessId;
    string script=$"Wait-Process -Id {pid} -ErrorAction SilentlyContinue; Remove-Item -LiteralPath '{quotedCurrent}' -Force -ErrorAction SilentlyContinue; Remove-Item -LiteralPath '{quotedRoot}' -ErrorAction SilentlyContinue";
@@ -26,4 +37,5 @@ public static class Program {
   } catch(Exception ex) { MessageBox.Show("Не удалось завершить удаление: "+ex.Message,"Yangi lotin klaviatura",MessageBoxButton.OK,MessageBoxImage.Error); return 1; }
  }
 }
+
 

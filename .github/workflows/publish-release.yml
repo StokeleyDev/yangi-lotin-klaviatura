@@ -1,0 +1,26 @@
+name: Publish packaged Windows release
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'dist/**'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Publish installer and portable ZIP
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="v1.1.0"
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            gh release create "$tag" --target "$GITHUB_SHA" --title "Yangi lotin klaviatura 1.1.0 — Liquid Glass" --notes-file RELEASE-NOTES.md
+          fi
+          gh release upload "$tag" "dist/Yangi lotin klaviatura Setup.exe" "dist/Yangi-Lotin-Portable.zip" --clobber

@@ -13,6 +13,14 @@ public partial class MainWindow : Window {
  private void Install_Click(object sender,RoutedEventArgs e) {
   if (completed) { Close(); return; }
   try {
+   foreach (var process in Process.GetProcessesByName("Yangi lotin klaviatura")) {
+    using (process) {
+     string? path;
+     try { path=process.MainModule?.FileName; } catch { continue; }
+     if (string.Equals(path,AppPath,StringComparison.OrdinalIgnoreCase))
+      throw new IOException("Закройте Yangi lotin klaviatura перед обновлением.");
+    }
+   }
    Directory.CreateDirectory(InstallDir);
    using Stream source=Assembly.GetExecutingAssembly().GetManifestResourceStream("Payload.zip") ?? throw new InvalidOperationException("Файлы приложения не найдены.");
    using var zip=new ZipArchive(source,ZipArchiveMode.Read);
@@ -32,6 +40,15 @@ public partial class MainWindow : Window {
    dynamic shell=Activator.CreateInstance(shellType)!;
    if(File.Exists(shortcut)) { dynamic old=shell.CreateShortcut(shortcut); string target=old.TargetPath; if(!string.Equals(target,AppPath,StringComparison.OrdinalIgnoreCase)) throw new IOException("На рабочем столе уже есть другой ярлык Yangi lotin klaviatura. Переименуйте его и повторите установку."); }
    dynamic link=shell.CreateShortcut(shortcut); link.TargetPath=AppPath; link.WorkingDirectory=InstallDir; link.Description="Yangi lotin klaviatura"; link.IconLocation=AppPath+",0"; link.Save();
+   using(var uninstall=Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall\YangiLotinKlaviatura")) {
+    uninstall?.SetValue("DisplayName","Yangi lotin klaviatura");
+    uninstall?.SetValue("DisplayVersion","1.1.0");
+    uninstall?.SetValue("InstallLocation",InstallDir);
+    uninstall?.SetValue("DisplayIcon",AppPath+",0");
+    uninstall?.SetValue("UninstallString","\""+Path.Combine(InstallDir,"Uninstall.exe")+"\"");
+    uninstall?.SetValue("NoModify",1,RegistryValueKind.DWord);
+    uninstall?.SetValue("NoRepair",1,RegistryValueKind.DWord);
+   }
    completed=true;
    OptionsCard.Height=OptionsCard.ActualHeight;
    CardTitle.Text="Установка завершена";
@@ -43,4 +60,5 @@ public partial class MainWindow : Window {
   } catch(Exception ex) { Status.Text="Установка не завершена: " + ex.Message; }
  }
 }
+
 
