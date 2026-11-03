@@ -19,8 +19,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          tag="v1.2.0"
+          tag="v1.2.4"
           if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" --target "$GITHUB_SHA" --title "Yangi lotin klaviatura 1.2.0 — Liquid Glass" --notes-file RELEASE-NOTES.md
+            gh release create "$tag" --target "$GITHUB_SHA" --title "Yangi lotin klaviatura 1.2.4 — Liquid Glass" --notes-file RELEASE-NOTES.md
           fi
           gh release upload "$tag" "dist/Yangi lotin klaviatura Setup.exe" "dist/Yangi-Lotin-Portable.zip" --clobber

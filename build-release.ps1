@@ -1,4 +1,4 @@
-param([string]$NugetSource)
+param([string]$NugetSource, [switch]$SkipWebBuild)
 $ErrorActionPreference = 'Stop'
 $projectRoot = $PSScriptRoot
 function Invoke-Checked([string]$File, [string[]]$Arguments) {
@@ -13,11 +13,15 @@ if (Test-Path -LiteralPath $staging) {
     Remove-Item -LiteralPath $resolved -Recurse -Force
 }
 New-Item -ItemType Directory -Path $portable -Force | Out-Null
-Push-Location (Join-Path $projectRoot 'WebUI')
-try {
-    Invoke-Checked 'npm.cmd' @('ci','--no-audit','--no-fund')
-    Invoke-Checked 'npm.cmd' @('run','build')
-} finally { Pop-Location }
+if (-not $SkipWebBuild) {
+    Push-Location (Join-Path $projectRoot 'WebUI')
+    try {
+        Invoke-Checked 'npm.cmd' @('ci','--no-audit','--no-fund')
+        Invoke-Checked 'npm.cmd' @('run','build')
+    } finally { Pop-Location }
+} elseif (-not (Test-Path -LiteralPath (Join-Path $projectRoot 'WebUI/dist/index.html'))) {
+    throw 'SkipWebBuild requires an existing verified WebUI/dist build.'
+}
 $restoreArgs = @()
 if ($NugetSource) { $restoreArgs = @('--source',$NugetSource) }
 Invoke-Checked 'dotnet' (@('publish',(Join-Path $projectRoot 'UzbekNewKeyboard.csproj'),'-c','Release','-o',$portable) + $restoreArgs)

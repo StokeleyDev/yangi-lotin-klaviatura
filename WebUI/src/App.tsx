@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { GlassButton, GlassSegmented, GlassSheet, GlassSwitch } from '@zakisheriff/liquid-glass';
 import { ArrowRight, Check, CheckCheck, Copy, Keyboard, Languages, Monitor, Moon, Settings2, Sun } from 'lucide-react';
+import appIcon from './assets/app-icon.png';
 
 type Language = 'uz' | 'ru';
 type NativeState = {type: 'state'; enabled: boolean; language: Language; status: string; error?: string | null};
@@ -9,10 +10,8 @@ declare global { interface Window { chrome?: {webview?: WebView} } }
 const host = window.chrome?.webview;
 const copy = {
   uz: {
-    subtitle: 'O‘zbekcha yozing. Erkin yozing.', title: 'Yangi lotin', titleEnd: 'klaviatura',
-    description: 'Odatiy tugmalar. Yangi harflar. Yozayotganingizda hammasi o‘z o‘rniga tushadi.',
     automatic: 'Avtomatik almashtirish', automaticHint: 'O‘zbek lotin tili tanlanganda barcha ilovalarda ishlaydi',
-    keys: 'To‘rt birikma. To‘rt yangi harf.', keysHint: 'Odatdagidek yozing — klaviatura qolganini bajaradi.',
+    keys: 'Harf birikmalari va mos harflar', keysHint: 'Birikmalarni yangi o‘zbek alifbosidagi harflarga avtomatik almashtirish',
     converter: 'Tayyor matnni o‘zgartirish', converterHint: 'Matnni joylang va yangi lotinga o‘giring.',
     placeholder: "Shahar, chiroyli, o'zbek, g'oya…", convert: 'O‘zgartirish', copied: 'Nusxalandi', copy: 'Nusxalash',
     settings: 'Sozlamalar', appearance: 'Ko‘rinish', system: 'Tizim', light: 'Yorug‘', dark: 'Qorong‘i',
@@ -23,10 +22,8 @@ const copy = {
     copyError: 'Nusxalab bo‘lmadi. Ctrl + C dan foydalaning.', connectionError: 'Ilova bilan aloqa uzildi. Qayta oching.'
   },
   ru: {
-    subtitle: 'Узбекский текст. Свободно и просто.', title: 'Yangi lotin', titleEnd: 'klaviatura',
-    description: 'Привычные клавиши. Новые буквы. Всё встаёт на свои места, пока вы пишете.',
     automatic: 'Автоматическая замена', automaticHint: 'Работает во всех приложениях с узбекской латиницей',
-    keys: 'Четыре сочетания. Четыре буквы.', keysHint: 'Пишите как обычно — клавиатура сделает остальное.',
+    keys: 'Соответствие буквенных сочетаний', keysHint: 'Автоматическое преобразование сочетаний в буквы нового узбекского алфавита',
     converter: 'Преобразование текста', converterHint: 'Вставьте текст и переведите в новую латиницу.',
     placeholder: "Shahar, chiroyli, o'zbek, g'oya…", convert: 'Преобразовать', copied: 'Скопировано', copy: 'Копировать',
     settings: 'Настройки', appearance: 'Оформление', system: 'Системное', light: 'Светлое', dark: 'Тёмное',
@@ -102,19 +99,14 @@ export default function App() {
       <div className="landscape" aria-hidden="true"/>
       <div className="content">
         <header className="toolbar">
-          <div className="brand"><Keyboard size={21} strokeWidth={1.7}/><span>Yangi lotin</span></div>
+          <div className="brand"><img className="brand-icon" src={appIcon} width="24" height="24" alt=""/><span>Yangi lotin</span></div>
           <div className="toolbar-actions">
             <GlassSegmented options={['UZ', 'RU']} value={language === 'uz' ? 0 : 1} onChange={changeLanguage} aria-label={t.language}/>
             <GlassButton icon={<Settings2 size={19}/>} aria-label={t.settings} onClick={() => setSheet(true)}/>
           </div>
         </header>
         {!host && <p className="preview-note"><Monitor size={14}/>{t.preview}</p>}
-        <main>
-          <section className="intro">
-            <div className="eyebrow"><span className="tiny-dot"/>{t.subtitle}</div>
-            <h1>{t.title}<br/><span>{t.titleEnd}</span></h1>
-            <p>{t.description}</p>
-          </section>
+        <main aria-label="Yangi lotin klaviatura">
           <section className="solid-panel status-card">
             <div className="status-icon"><Keyboard size={25} strokeWidth={1.5}/></div>
             <div className="status-content"><h2>{t.automatic}</h2><p>{t.automaticHint}</p>

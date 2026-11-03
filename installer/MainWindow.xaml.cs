@@ -42,7 +42,7 @@ public partial class MainWindow : Window {
    dynamic link=shell.CreateShortcut(shortcut); link.TargetPath=AppPath; link.WorkingDirectory=InstallDir; link.Description="Yangi lotin klaviatura"; link.IconLocation=AppPath+",0"; link.Save();
    using(var uninstall=Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall\YangiLotinKlaviatura")) {
     uninstall?.SetValue("DisplayName","Yangi lotin klaviatura");
-    uninstall?.SetValue("DisplayVersion","1.2.0");
+    uninstall?.SetValue("DisplayVersion","1.2.4");
     uninstall?.SetValue("InstallLocation",InstallDir);
     uninstall?.SetValue("DisplayIcon",AppPath+",0");
     uninstall?.SetValue("UninstallString","\""+Path.Combine(InstallDir,"Uninstall.exe")+"\"");

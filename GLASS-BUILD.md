@@ -39,3 +39,15 @@ The production React UI and C# project were compiled. Headless Chromium checks c
 The local-page loading regression was reproduced in real WebView2 156.0.4314.58 with an invisible parent window and isolated profile: navigating to the mapped folder root fails; explicitly navigating to /index.html succeeds. The corrected navigation policy is shared with the regression probe. The real React bundle emits its ready message and applies a native Russian-language/disabled-state message. The 1.2.0 interface has 7 glass surfaces in its default DOM, compared with 13 in 1.1.0; the six large panels are opaque and have no backdrop filter. The probe never shows a window or installs global keyboard hooks. Real global key interception and visible WPF window rendering are not covered by this test.
 
 Refraction depends on the installed Chromium/WebView2 version and the background behind the controls. Using the same library does not guarantee identical pixels across different browsers, GPU configurations and Windows versions.
+
+## Typography in 1.2.1
+
+Uses locally bundled Inter Variable (SIL Open Font License, included as WebUI/Inter-LICENSE.txt), with Latin, Latin Extended and Cyrillic subsets. Body/editor text is 16 px, section headings 18 px and supporting labels 12–14 px. Apple system fonts are preferred where installed; Windows uses bundled Inter. No font CDN is used.
+
+## Compact layout in 1.2.2
+
+Default window size is 960 x 680 device-independent units and is clamped to the Windows work area. Desktop viewports 760px or wider and at most 840px high use two content columns. Body/editor text remains 16px; normal desktop states fit without scrolling down to a 540px viewport height in headless Uzbek/Russian checks. Narrow windows, expanded editors and long errors may still scroll; content is never clipped by hiding overflow.
+
+## Light theme and header in 1.2.3
+
+Removed the displayed introductory title/subtitle/description in both languages, retaining the toolbar brand. The light wallpaper is the user-supplied pastel PNG. Text directly above it uses dark colors; dark mode retains white text.

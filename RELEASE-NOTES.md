@@ -1,14 +1,16 @@
-# Yangi lotin klaviatura 1.2.0
+# Yangi lotin klaviatura 1.2.4
 
-- Solid, opaque status panel, four letter cards, converter panel and text field.
-- Liquid Glass retained on buttons, switches, language controls and the settings sheet.
-- Six large refracting card surfaces removed.
-- Supplied Uzbek-themed light and dark backgrounds; system theme and manual selection.
-- Uzbek and Russian interface, native automatic replacement and text conversion.
-- Fixed local page navigation to index.html.
-- Updated installer payload, portable ZIP and uninstaller cleanup for the new files.
-- Reproducible release build with build-release.ps1.
+Changes since the previous published release (1.2.0):
 
-Windows x64. Requires .NET 8 Desktop Runtime and Microsoft Edge WebView2 Evergreen Runtime. Extract the complete portable ZIP before launching. Close the app before installing an update.
+- Bundled Inter Variable with larger, readable interface text; no font CDN or internet needed.
+- Compact 960 x 680 default window, DPI-aware sizing and a two-column layout for short desktop windows.
+- Removed the large introductory title and description in Uzbek and Russian.
+- Updated light wallpaper with dark foreground text; dark wallpaper retained.
+- Formal letter-mapping headings and descriptions in Uzbek and Russian.
+- Real application icon beside the toolbar brand.
+- Solid content panels and Liquid Glass controls retained.
+- Updated portable ZIP, installer payload and screenshots.
 
-Verification: release builds succeeded; headless UI checks passed; real hidden WebView2 loaded the production interface and exchanged bridge messages. Installation on the user desktop and real global keyboard interception were not exercised.
+Windows x64. Requires .NET 8 Desktop Runtime and Microsoft Edge WebView2 Evergreen Runtime. Extract the entire portable ZIP. Close the old app before updating.
+
+Validation: production React and native release builds, font/logo loading checks, language/theme/interaction checks, no-scroll checks across desktop sizes down to 540 px high, and hidden real WebView2 loading/bridge checks. Desktop installation and real global keyboard interception were not automated on the user desktop.

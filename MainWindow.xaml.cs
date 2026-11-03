@@ -21,6 +21,12 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        // Fit the usable desktop in WPF's DPI-independent units.
+        var workArea = SystemParameters.WorkArea;
+        Width = Math.Min(Width, Math.Max(360, workArea.Width - 24));
+        Height = Math.Min(Height, Math.Max(360, workArea.Height - 24));
+        MinWidth = Math.Min(MinWidth, Width);
+        MinHeight = Math.Min(MinHeight, Height);
         Loaded += async (_, _) => await InitializeBrowserAsync();
         statusTimer.Tick += (_, _) => SendState();
     }
