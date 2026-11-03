@@ -1,12 +1,37 @@
-![Yangi lotin klaviatura](assets/cover.png)
+# Yangi lotin klaviatura — yangi o‘zbek alifbosi uchun Windows dasturi
 
-# Yangi lotin klaviatura · 1.2.4
+**Yangi lotin klaviatura** — yangi o‘zbek alifbosida yozish uchun Windows klaviaturasi va matn konvertori. Dastur **sh → ş, ch → ç, o‘ → ö, g‘ → ğ** birikmalarini yozish paytida avtomatik almashtiradi va tayyor matnni yangi lotin harflariga o‘zgartiradi.
 
-Windows uchun yangi o‘zbek lotin klaviaturasi · Узбекская латинская клавиатура для Windows · Updated Uzbek Latin keyboard for Windows.
+**Янги ўзбек алифбоси учун клавиатура:** Windows дастури янги лотин ҳарфларида ёзиш ва тайёр матнни ўзгартириш учун мўлжалланган.
 
-- [Установщик / Installer / O‘rnatuvchi](dist/Yangi%20lotin%20klaviatura%20Setup.exe?raw=true)
-- [Portable ZIP](dist/Yangi-Lotin-Portable.zip?raw=true)
-- [Releases](../../releases)
+**Новый узбекский алфавит на Windows:** клавиатура и преобразование текста с поддержкой букв **ş, ç, ö, ğ**. Интерфейс на узбекском и русском языках.
+
+Joriy versiya / Текущая версия: **1.2.4**.
+
+## Yuklab olish / Скачать
+
+- [Windows uchun o‘rnatuvchi / Установщик](dist/Yangi%20lotin%20klaviatura%20Setup.exe?raw=true)
+- [Portable ZIP — o‘rnatmasdan ishga tushirish / Без установки](dist/Yangi-Lotin-Portable.zip?raw=true)
+- [Barcha versiyalar / Все версии](../../releases)
+
+![Yangi o‘zbek alifbosi uchun Windows klaviaturasi — Yangi lotin klaviatura dasturi](assets/cover.png)
+
+## Yangi o‘zbek alifbosida qanday yoziladi?
+
+Windows tizimida **O‘zbek (lotin)** kiritish tilini tanlang va dasturdagi avtomatik almashtirishni yoqing. Odatiy harf birikmalarini tering; dastur ularni quyidagicha o‘zgartiradi:
+
+| Birikma | Natija | Misol |
+| --- | --- | --- |
+| sh | ş | shahar → şahar |
+| ch | ç | chiroyli → çiroyli |
+| o‘ yoki o' | ö | o‘zbek → özbek |
+| g‘ yoki g' | ğ | g‘oya → ğoya |
+
+Tayyor matn uchun dasturdagi matn maydoniga yozing yoki matnni joylang va **O‘zgartirish** tugmasini bosing. Dastur kirill yozuvini to‘liq lotinga o‘girish uchun emas, yuqoridagi lotin harf birikmalarini almashtirish uchun mo‘ljallangan.
+
+### Yangi lotin klaviatura qaysi Windows tizimida ishlaydi?
+
+Windows x64, **.NET Desktop Runtime 8** va **Microsoft Edge WebView2 Runtime** talab qilinadi. O‘rnatish uchun yuqoridagi o‘rnatuvchini yuklab oling yoki portable ZIP arxivini to‘liq oching.
 
 ## Новое в 1.2.4
 
