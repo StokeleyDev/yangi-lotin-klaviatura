@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { GlassButton, GlassCard, GlassSegmented, GlassSheet, GlassSwitch } from '@zakisheriff/liquid-glass';
+import { GlassButton, GlassSegmented, GlassSheet, GlassSwitch } from '@zakisheriff/liquid-glass';
 import { ArrowRight, Check, CheckCheck, Copy, Keyboard, Languages, Monitor, Moon, Settings2, Sun } from 'lucide-react';
 
 type Language = 'uz' | 'ru';
@@ -115,25 +115,25 @@ export default function App() {
             <h1>{t.title}<br/><span>{t.titleEnd}</span></h1>
             <p>{t.description}</p>
           </section>
-          <GlassCard padding="24px" radius="28px" className="status-card">
+          <section className="solid-panel status-card">
             <div className="status-icon"><Keyboard size={25} strokeWidth={1.5}/></div>
             <div className="status-content"><h2>{t.automatic}</h2><p>{t.automaticHint}</p>
               <div className={'status-line ' + (native?.error ? 'error' : '')} role="status"><span className={'status-dot ' + (native?.enabled ? 'on' : '')}/>{native?.status ?? (host ? t.ready : 'Windows · UZB LAT')}</div>
             </div>
             <GlassSwitch checked={native?.enabled ?? false} onChange={enabled => host?.postMessage({action:'setEnabled', enabled})} disabled={!native} aria-label={t.automatic}/>
-          </GlassCard>
+          </section>
           <section className="letters-section">
             <div className="section-heading"><div><h2>{t.keys}</h2><p>{t.keysHint}</p></div><span className="key-label">UZB LAT</span></div>
             <div className="letter-grid">
-              {letters.map(item => <GlassCard key={item.to} padding="18px" radius="24px" className="letter-card">
+              {letters.map(item => <div key={item.to} className="solid-panel letter-card">
                 <div className="key-transform"><kbd>{item.from}</kbd><ArrowRight size={14}/></div>
                 <div className="new-letter">{item.to}</div>
                 <div className="word"><span>{item.word}</span><ArrowRight size={12}/><strong>{item.result}</strong></div>
-              </GlassCard>)}
+              </div>)}
             </div>
             <div className="undo-hint"><kbd>⌫</kbd><span>{t.undo}</span></div>
           </section>
-          <GlassCard padding="24px" radius="28px" className="converter">
+          <section className="solid-panel converter">
             <div className="section-heading"><div><h2>{t.converter}</h2><p>{t.converterHint}</p></div><Languages size={22} strokeWidth={1.5}/></div>
             <textarea ref={editor} value={text} onChange={e => {setText(e.target.value); setNotice('');}} readOnly={pending} maxLength={200000} placeholder={t.placeholder} aria-label={t.converter} spellCheck={false}/>
             <div className="converter-footer"><div className="editor-meta"><span>{text.length.toLocaleString()} {t.count}</span><span role="status" className="notice">{notice}</span></div>
@@ -142,7 +142,7 @@ export default function App() {
                 <GlassButton variant="filled" onClick={convert} disabled={!native || !text || pending} icon={<CheckCheck size={17}/>}>{t.convert}</GlassButton>
               </div>
             </div>
-          </GlassCard>
+          </section>
         </main>
         <footer><span className="tiny-dot"/>{t.footer}</footer>
       </div>

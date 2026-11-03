@@ -1,6 +1,6 @@
 # Yangi lotin — Liquid Glass
 
-The Windows keyboard engine remains C#/.NET 8. The interface is React, hosted locally inside Microsoft Edge WebView2. It uses the actual @zakisheriff/liquid-glass 0.3.16 library (MIT), not a WPF approximation.
+The Windows keyboard engine remains C#/.NET 8. The interface is React, hosted locally inside Microsoft Edge WebView2. Buttons, switches, segmented controls and the settings sheet use @zakisheriff/liquid-glass 0.3.16 (MIT). In 1.2.0 the status panel, four letter cards, converter panel and editor are solid, opaque surfaces without refraction or backdrop blur.
 
 ## Run the portable build
 
@@ -36,6 +36,6 @@ Ship the complete publish folder. To rebuild both the installer and portable dis
 
 The production React UI and C# project were compiled. Headless Chromium checks cover the real component library, a simulated native bridge (toggle/conversion), language switching, settings sheet and theme changes, and horizontal overflow at 720 and 390 px.
 
-The local-page loading regression was reproduced in real WebView2 156.0.4314.58 with an invisible parent window and isolated profile: navigating to the mapped folder root fails; explicitly navigating to /index.html succeeds. The corrected navigation policy is shared with the regression probe. The real React bundle emits its ready message, displays 13 glass components and applies a native Russian-language/disabled-state message. The probe never shows a window or installs global keyboard hooks. Real global key interception and visible WPF window rendering are not covered by this test.
+The local-page loading regression was reproduced in real WebView2 156.0.4314.58 with an invisible parent window and isolated profile: navigating to the mapped folder root fails; explicitly navigating to /index.html succeeds. The corrected navigation policy is shared with the regression probe. The real React bundle emits its ready message and applies a native Russian-language/disabled-state message. The 1.2.0 interface has 7 glass surfaces in its default DOM, compared with 13 in 1.1.0; the six large panels are opaque and have no backdrop filter. The probe never shows a window or installs global keyboard hooks. Real global key interception and visible WPF window rendering are not covered by this test.
 
 Refraction depends on the installed Chromium/WebView2 version and the background behind the controls. Using the same library does not guarantee identical pixels across different browsers, GPU configurations and Windows versions.

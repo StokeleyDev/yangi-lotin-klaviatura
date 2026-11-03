@@ -22,8 +22,9 @@ h1 { font-size:clamp(38px,5.4vw,58px); line-height:1.03; letter-spacing:-2.5px; 
 h1 span { font-weight:400; color:inherit; opacity:.88; }
 .intro>p { color:var(--muted); max-width:470px; font-size:14px; line-height:1.6; margin:0; }
 h2 { font-size:16px; letter-spacing:-.3px; line-height:1.4; font-weight:600; margin:0; }
+.solid-panel { background:var(--panel,#f2f3f8); color:var(--ink); border:1px solid var(--panel-border,#d5d9e3); border-radius:28px; padding:24px; box-shadow:0 6px 18px #07133114; }
 .status-card { display:flex; align-items:center; gap:18px; }
-.status-icon { width:50px; height:50px; border-radius:16px; background:#ffffff35; display:grid; place-items:center; flex-shrink:0; }
+.status-icon { width:50px; height:50px; border-radius:16px; background:var(--inset,#e5e8f2); display:grid; place-items:center; flex-shrink:0; }
 .status-content { flex:1; }
 .status-content p,.section-heading p { margin:4px 0 0; font-size:12px; color:var(--muted); line-height:1.5; }
 .status-line { margin-top:10px; display:flex; align-items:center; gap:6px; color:var(--muted); font-size:11px; }
@@ -34,15 +35,16 @@ h2 { font-size:16px; letter-spacing:-.3px; line-height:1.4; font-weight:600; mar
 .section-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:14px; }
 .key-label { font-size:10px; letter-spacing:1px; color:var(--muted); white-space:nowrap; }
 .letter-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
-.letter-card { min-height:154px; position:relative; }
+.letter-card { min-height:154px; position:relative; padding:18px; border-radius:24px; }
 .key-transform { display:flex; justify-content:space-between; align-items:center; color:var(--muted); }
 kbd { font-family:inherit; font-size:11px; display:inline-grid; place-items:center; min-width:25px; height:22px; padding:0 6px; background:#ffffff29; border:1px solid #ffffff4d; border-radius:6px; }
+.letter-card kbd { background:var(--inset,#e5e8f2); border-color:var(--panel-border,#d5d9e3); }
 .new-letter { font-size:50px; line-height:1; letter-spacing:-2px; font-weight:400; margin:10px 0 12px; }
 .word { display:flex; align-items:center; gap:5px; font-size:10px; color:var(--muted); white-space:nowrap; }
 .word strong { color:var(--ink); font-weight:500; }
 .undo-hint { display:flex; justify-content:center; align-items:center; gap:7px; font-size:10px; color:var(--muted); margin-top:12px; }
 .undo-hint kbd { height:19px; min-width:24px; }
-textarea { display:block; width:100%; min-height:90px; resize:vertical; border:1px solid #ffffff55; border-radius:16px; padding:14px 16px; color:var(--ink); background:var(--field); line-height:1.6; font-size:14px; }
+textarea { display:block; width:100%; min-height:90px; resize:vertical; border:1px solid var(--panel-border,#d5d9e3); border-radius:16px; padding:14px 16px; color:var(--ink); background:var(--editor,#ffffff); line-height:1.6; font-size:14px; }
 textarea::placeholder { color:var(--muted); opacity:.85; }
 .converter-footer { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-top:14px; }
 .editor-meta { display:flex; flex-direction:column; gap:4px; font-size:10px; color:var(--muted); }
@@ -55,11 +57,11 @@ footer { display:flex; align-items:center; justify-content:center; gap:7px; colo
 h3 { font-size:15px; font-weight:500; margin:0; }
 .windows-setting { border-top:1px solid #8883; padding-top:12px; margin:6px 0; }
 .windows-setting p { font-size:13px; line-height:1.6; color:var(--muted); }
-html[data-theme="dark"] { --ink:#f6f3ff; --muted:#d6d3e4; --field:#0c112a35; --wallpaper:url('./assets/uzbek-dark.png'); --canvas:#0c1028; color:#f6f3ff; color-scheme:dark; }
+html[data-theme="dark"] { --ink:#f6f3ff; --muted:#d6d3e4; --panel:#1b2035; --panel-border:#394057; --inset:#2d344e; --editor:#111728; --wallpaper:url('./assets/uzbek-dark.png'); --canvas:#0c1028; color:#f6f3ff; color-scheme:dark; }
 html[data-theme="dark"] .status-dot.on { background:#58d18e; }
 html[data-theme="dark"] .error { color:#ffabb9; }
 @media(prefers-color-scheme:dark) {
- html:not([data-theme="light"]) { --ink:#f6f3ff; --muted:#d6d3e4; --field:#0c112a35; --wallpaper:url('./assets/uzbek-dark.png'); --canvas:#0c1028; color:#f6f3ff; }
+ html:not([data-theme="light"]) { --ink:#f6f3ff; --muted:#d6d3e4; --panel:#1b2035; --panel-border:#394057; --inset:#2d344e; --editor:#111728; --wallpaper:url('./assets/uzbek-dark.png'); --canvas:#0c1028; color:#f6f3ff; }
  html:not([data-theme="light"]) .status-dot.on { background:#58d18e; }
  html:not([data-theme="light"]) .error { color:#ffabb9; }
 }
@@ -79,6 +81,7 @@ html[data-theme="dark"] .error { color:#ffabb9; }
  *,*::before,*::after { animation-duration:.01ms !important; transition-duration:.01ms !important; }
 }
 @media(forced-colors:active) {
+ .solid-panel { background:Canvas; border-color:CanvasText; box-shadow:none; }
  .landscape { background:Canvas; } .new-letter,h1 span,.word strong { color:CanvasText; }
  textarea { border:1px solid CanvasText; } .status-dot { background:CanvasText; }
 }

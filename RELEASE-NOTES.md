@@ -1,6 +1,8 @@
-# Yangi lotin klaviatura 1.1.0
+# Yangi lotin klaviatura 1.2.0
 
-- React interface inside WebView2 using the real @zakisheriff/liquid-glass library.
+- Solid, opaque status panel, four letter cards, converter panel and text field.
+- Liquid Glass retained on buttons, switches, language controls and the settings sheet.
+- Six large refracting card surfaces removed.
 - Supplied Uzbek-themed light and dark backgrounds; system theme and manual selection.
 - Uzbek and Russian interface, native automatic replacement and text conversion.
 - Fixed local page navigation to index.html.

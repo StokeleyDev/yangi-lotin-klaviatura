@@ -6,7 +6,7 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v8.0": {
-      "Yangi lotin klaviatura/1.1.0": {
+      "Yangi lotin klaviatura/1.2.0": {
         "dependencies": {
           "Microsoft.Web.WebView2": "1.0.4314.35",
           "Microsoft.Web.WebView2.Core": "1.0.4314.35",
@@ -63,7 +63,7 @@
     }
   },
   "libraries": {
-    "Yangi lotin klaviatura/1.1.0": {
+    "Yangi lotin klaviatura/1.2.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
