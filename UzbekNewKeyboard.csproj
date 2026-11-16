@@ -3,6 +3,7 @@
   <OutputType>WinExe</OutputType>
   <TargetFramework>net8.0-windows</TargetFramework>
   <UseWPF>true</UseWPF>
+  <UseWindowsForms>true</UseWindowsForms>
   <Nullable>enable</Nullable>
   <ImplicitUsings>enable</ImplicitUsings>
   <AssemblyName>Yangi lotin klaviatura</AssemblyName>
@@ -10,6 +11,9 @@
   <ApplicationIcon>Assets\yangi-logo.ico</ApplicationIcon>
  </PropertyGroup>
  <ItemGroup>
+  <!-- WinForms is only used for the tray NotifyIcon; keep WPF types unambiguous. -->
+  <Using Remove="System.Windows.Forms" />
+  <Using Remove="System.Drawing" />
   <InternalsVisibleTo Include="UzbekKeyboard.Tests" />
   <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4314.35" />
   <Resource Include="Assets\yangi-logo.png" />

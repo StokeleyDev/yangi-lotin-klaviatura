@@ -18,6 +18,9 @@ public partial class MainWindow : Window
     private bool ready;
     private bool closing;
     private bool initializing;
+    private bool exiting;
+    private readonly System.Windows.Forms.NotifyIcon tray = new();
+    private readonly System.Windows.Forms.ToolStripMenuItem trayOpen = new(), trayEnabled = new(), trayPause = new(), trayExit = new();
     private AppSettings settings = AppSettings.Load();
     private bool hotkeyRegistered;
     private const int WM_HOTKEY = 0x312, HotkeyPause = 1, HotkeyPauseCancel = 2;
@@ -32,6 +35,8 @@ public partial class MainWindow : Window
         MinWidth = Math.Min(MinWidth, Width);
         MinHeight = Math.Min(MinHeight, Height);
         mapper.SetExcludedApps(settings.ExcludedApps);
+        CreateTray();
+        if (Application.Current != null) Application.Current.SessionEnding += (_, _) => exiting = true;
         SourceInitialized += (_, _) => RegisterPauseHotkey();
         Loaded += async (_, _) => await InitializeBrowserAsync();
         // State is pushed on events only: toggle, pause, language, errors, and layout/foreground changes from the mapper.
@@ -183,6 +188,42 @@ public partial class MainWindow : Window
         SendState(force: true);
     }
 
+    private void CreateTray()
+    {
+        tray.Icon = Environment.ProcessPath is string exe ? System.Drawing.Icon.ExtractAssociatedIcon(exe) : null;
+        tray.Text = "Yangi lotin klaviatura";
+        trayOpen.Click += (_, _) => ShowFromTray();
+        trayOpen.Font = new System.Drawing.Font(trayOpen.Font, System.Drawing.FontStyle.Bold);
+        trayEnabled.Click += (_, _) => { if (ready) SetEnabled(!mapper.Enabled); };
+        trayPause.Click += (_, _) => { if (ready) SetPaused(!mapper.Paused); };
+        trayExit.Click += (_, _) => { exiting = true; Close(); };
+        var menu = new System.Windows.Forms.ContextMenuStrip();
+        menu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { trayOpen, trayEnabled, trayPause, new System.Windows.Forms.ToolStripSeparator(), trayExit });
+        tray.ContextMenuStrip = menu;
+        tray.DoubleClick += (_, _) => ShowFromTray();
+        UpdateTray();
+        tray.Visible = true;
+    }
+
+    private void UpdateTray()
+    {
+        var strings = UiStrings.Get(language);
+        trayOpen.Text = strings.TrayOpen;
+        trayEnabled.Text = strings.TrayEnabled;
+        trayEnabled.Checked = mapper.Enabled;
+        trayEnabled.Enabled = trayPause.Enabled = ready;
+        trayPause.Text = strings.TrayPause;
+        trayPause.Checked = mapper.Paused;
+        trayExit.Text = strings.TrayExit;
+    }
+
+    private void ShowFromTray()
+    {
+        Show();
+        if (WindowState == WindowState.Minimized) WindowState = WindowState.Normal;
+        Activate();
+    }
+
     private void RegisterPauseHotkey()
     {
         var handle = new WindowInteropHelper(this).Handle;
@@ -212,7 +253,9 @@ public partial class MainWindow : Window
 
     private void SendState(bool force = false)
     {
-        if (!ready || closing) return;
+        if (closing) return;
+        UpdateTray();
+        if (!ready) return;
         var strings = UiStrings.Get(language);
         Title = strings.WindowTitle;
         string status = error != null ? strings.StatusErrorPrefix + error :
@@ -240,6 +283,15 @@ public partial class MainWindow : Window
     private async void Retry_Click(object sender, RoutedEventArgs e) => await InitializeBrowserAsync();
     private void Window_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
+        if (!exiting)
+        {
+            // Closing the window keeps the app (and replacement) running in the tray; exit is in the tray menu.
+            e.Cancel = true;
+            Hide();
+            return;
+        }
+        tray.Visible = false;
+        tray.Dispose();
         closing = true;
         ready = false;
         mapper.Stop();

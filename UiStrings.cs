@@ -39,7 +39,11 @@ public sealed record Strings(
     string StatusElevated,
     string StatusPaused,
     string StatusExcluded,
-    string HotkeyUnavailable
+    string HotkeyUnavailable,
+    string TrayOpen,
+    string TrayEnabled,
+    string TrayPause,
+    string TrayExit
 );
 
 public static class UiStrings {
@@ -65,7 +69,7 @@ public static class UiStrings {
         InputCardTitle: "Sinab ko‘ring",
         InputPlaceholder: "Matnni bu yerga yozing...",
         InputAutomationName: "Klaviaturani tekshirish maydoni",
-        HintText: "Windows sozlamalarida o‘zbek lotin tilini tanlang va klaviaturani yoqing. Oyna yopilganda amal to‘xtaydi.",
+        HintText: "Windows sozlamalarida o‘zbek lotin tilini tanlang va klaviaturani yoqing. Oyna yopilganda dastur trayda ishlashda davom etadi.",
         SettingsButtonText: "Til sozlamalari",
         SettingsAutomationName: "Til sozlamalarini ochish",
         CloseAutomationName: "Yopish",
@@ -77,7 +81,11 @@ public static class UiStrings {
         StatusElevated: "{0} administrator huquqi bilan ishlayapti — bu oynada almashtirish ishlamaydi",
         StatusPaused: "Pauza — davom ettirish uchun Ctrl + Alt + Pause",
         StatusExcluded: "{0} istisnolar ro‘yxatida — almashtirish o‘chirilgan",
-        HotkeyUnavailable: "Ctrl + Alt + Pause boshqa dastur tomonidan band"
+        HotkeyUnavailable: "Ctrl + Alt + Pause boshqa dastur tomonidan band",
+        TrayOpen: "Ochish",
+        TrayEnabled: "Avtomatik almashtirish",
+        TrayPause: "Pauza (Ctrl + Alt + Pause)",
+        TrayExit: "Chiqish"
     );
 
     public static readonly Strings Russian = new(
@@ -102,7 +110,7 @@ public static class UiStrings {
         InputCardTitle: "Попробуйте",
         InputPlaceholder: "Наберите текст здесь...",
         InputAutomationName: "Поле для проверки раскладки",
-        HintText: "Выберите узбекский латинский язык в Windows и включите раскладку. При закрытии окна действие прекращается.",
+        HintText: "Выберите узбекский латинский язык в Windows и включите раскладку. При закрытии окна программа сворачивается в трей и продолжает работать.",
         SettingsButtonText: "Настройки языка",
         SettingsAutomationName: "Открыть настройки языка",
         CloseAutomationName: "Закрыть",
@@ -114,7 +122,11 @@ public static class UiStrings {
         StatusElevated: "{0} запущено от имени администратора — в этом окне замена не работает",
         StatusPaused: "Пауза — продолжить: Ctrl + Alt + Pause",
         StatusExcluded: "{0} в стоп-листе — замена отключена",
-        HotkeyUnavailable: "Ctrl + Alt + Pause занята другой программой"
+        HotkeyUnavailable: "Ctrl + Alt + Pause занята другой программой",
+        TrayOpen: "Открыть",
+        TrayEnabled: "Автоматическая замена",
+        TrayPause: "Пауза (Ctrl + Alt + Pause)",
+        TrayExit: "Выход"
     );
 
     public static Strings Get(AppLanguage lang) => lang switch {
