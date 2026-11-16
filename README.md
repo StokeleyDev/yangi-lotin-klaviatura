@@ -10,9 +10,10 @@ Joriy versiya / Текущая версия: **1.2.4**.
 
 ## Yuklab olish / Скачать
 
-- [Windows uchun o‘rnatuvchi / Установщик](dist/Yangi%20lotin%20klaviatura%20Setup.exe?raw=true)
-- [Portable ZIP — o‘rnatmasdan ishga tushirish / Без установки](dist/Yangi-Lotin-Portable.zip?raw=true)
-- [Barcha versiyalar / Все версии](../../releases)
+- [Windows uchun o‘rnatuvchi / Установщик](https://github.com/StokeleyDev/yangi-lotin-klaviatura/releases/latest/download/Yangi.lotin.klaviatura.Setup.exe)
+- [Portable ZIP — o‘rnatmasdan ishga tushirish / Без установки](https://github.com/StokeleyDev/yangi-lotin-klaviatura/releases/latest/download/Yangi-Lotin-Portable.zip)
+- [SHA-256 nazorat summalari / Контрольные суммы](https://github.com/StokeleyDev/yangi-lotin-klaviatura/releases/latest/download/SHA256SUMS.txt)
+- [So‘nggi versiya / Последняя версия](https://github.com/StokeleyDev/yangi-lotin-klaviatura/releases/latest) · [Barcha versiyalar / Все версии](https://github.com/StokeleyDev/yangi-lotin-klaviatura/releases)
 
 ![Yangi o‘zbek alifbosi uchun Windows klaviaturasi — Yangi lotin klaviatura dasturi](assets/cover.png)
 
