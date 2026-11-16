@@ -41,6 +41,6 @@ if (Test-Path -LiteralPath $distPortable) {
 }
 New-Item -ItemType Directory -Path $distribution -Force | Out-Null
 Copy-Item -LiteralPath $portable -Destination $distPortable -Recurse
-Copy-Item -LiteralPath (Join-Path $staging 'setup/Yangi lotin klaviatura Setup.exe') -Destination $distribution
+Copy-Item -LiteralPath (Join-Path $staging 'setup/Yangi-Lotin-Setup.exe') -Destination $distribution
 Compress-Archive -Path (Join-Path $distPortable '*') -DestinationPath (Join-Path $distribution 'Yangi-Lotin-Portable.zip') -Force
 Get-ChildItem -LiteralPath $distribution

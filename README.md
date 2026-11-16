@@ -10,7 +10,7 @@ Joriy versiya / Текущая версия: **1.2.4**.
 
 ## Yuklab olish / Скачать
 
-- [Windows uchun o‘rnatuvchi / Установщик](https://github.com/StokeleyDev/yangi-lotin-klaviatura/releases/latest/download/Yangi.lotin.klaviatura.Setup.exe)
+- [Windows uchun o‘rnatuvchi / Установщик](https://github.com/StokeleyDev/yangi-lotin-klaviatura/releases/latest/download/Yangi-Lotin-Setup.exe)
 - [Portable ZIP — o‘rnatmasdan ishga tushirish / Без установки](https://github.com/StokeleyDev/yangi-lotin-klaviatura/releases/latest/download/Yangi-Lotin-Portable.zip)
 - [SHA-256 nazorat summalari / Контрольные суммы](https://github.com/StokeleyDev/yangi-lotin-klaviatura/releases/latest/download/SHA256SUMS.txt)
 - [So‘nggi versiya / Последняя версия](https://github.com/StokeleyDev/yangi-lotin-klaviatura/releases/latest) · [Barcha versiyalar / Все версии](https://github.com/StokeleyDev/yangi-lotin-klaviatura/releases)

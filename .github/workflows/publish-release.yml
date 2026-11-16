@@ -35,7 +35,7 @@ jobs:
         shell: pwsh
         run: |
           Set-Location dist
-          Get-FileHash -Algorithm SHA256 -LiteralPath 'Yangi lotin klaviatura Setup.exe','Yangi-Lotin-Portable.zip' |
+          Get-FileHash -Algorithm SHA256 -LiteralPath 'Yangi-Lotin-Setup.exe','Yangi-Lotin-Portable.zip' |
             ForEach-Object { '{0}  {1}' -f $_.Hash.ToLowerInvariant(), (Split-Path -Leaf $_.Path) } |
             Set-Content -Encoding utf8NoBOM SHA256SUMS.txt
           Get-Content SHA256SUMS.txt
@@ -52,5 +52,5 @@ jobs:
             gh release create $tag --target $env:GITHUB_SHA --title "Yangi lotin klaviatura $version" --notes-file RELEASE-NOTES.md
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           }
-          gh release upload $tag 'dist/Yangi lotin klaviatura Setup.exe' 'dist/Yangi-Lotin-Portable.zip' 'dist/SHA256SUMS.txt' --clobber
+          gh release upload $tag 'dist/Yangi-Lotin-Setup.exe' 'dist/Yangi-Lotin-Portable.zip' 'dist/SHA256SUMS.txt' --clobber
           exit $LASTEXITCODE

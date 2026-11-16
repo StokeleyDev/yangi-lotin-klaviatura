@@ -20,7 +20,7 @@ Requires Node.js 18+ and .NET SDK 8.
 2. In WebUI: npm run build
 3. In the project root: dotnet publish -c Release -o publish
 
-Ship the complete publish folder. To rebuild both the installer and portable distribution, run ./build-release.ps1 from PowerShell. It builds React, publishes the app and x64 uninstaller, refreshes installer/payload.zip, and creates dist/portable, dist/Yangi-Lotin-Portable.zip and dist/Yangi lotin klaviatura Setup.exe. Close any dev/preview servers before building.
+Ship the complete publish folder. To rebuild both the installer and portable distribution, run ./build-release.ps1 from PowerShell. It builds React, publishes the app and x64 uninstaller, refreshes installer/payload.zip, and creates dist/portable, dist/Yangi-Lotin-Portable.zip and dist/Yangi-Lotin-Setup.exe. Close any dev/preview servers before building.
 
 ## Behavior
 
