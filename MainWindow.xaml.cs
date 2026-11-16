@@ -11,7 +11,6 @@ namespace UzbekKeyboard;
 public partial class MainWindow : Window
 {
     private readonly KeyboardMapper mapper = new();
-    private readonly System.Windows.Threading.DispatcherTimer statusTimer = new() { Interval = TimeSpan.FromMilliseconds(400) };
     private readonly JsonSerializerOptions jsonOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     private AppLanguage language = AppLanguage.Uzbek;
     private string? error;
@@ -35,7 +34,8 @@ public partial class MainWindow : Window
         mapper.SetExcludedApps(settings.ExcludedApps);
         SourceInitialized += (_, _) => RegisterPauseHotkey();
         Loaded += async (_, _) => await InitializeBrowserAsync();
-        statusTimer.Tick += (_, _) => SendState();
+        // State is pushed on events only: toggle, pause, language, errors, and layout/foreground changes from the mapper.
+        mapper.StateChanged += () => Dispatcher.BeginInvoke(() => SendState());
     }
 
     private async Task InitializeBrowserAsync()
@@ -70,7 +70,6 @@ public partial class MainWindow : Window
             core.ProcessFailed += (_, _) =>
             {
                 ready = false;
-                statusTimer.Stop();
                 mapper.Stop();
                 ShowFailure("Interfeys to‘xtadi / Интерфейс остановлен. Restart the app.");
             };
@@ -118,7 +117,6 @@ public partial class MainWindow : Window
                     {
                         ready = true;
                         SetEnabled(true);
-                        statusTimer.Start();
                     }
                     Loading.Visibility = Visibility.Collapsed;
                     SendState(force: true);
@@ -244,7 +242,6 @@ public partial class MainWindow : Window
     {
         closing = true;
         ready = false;
-        statusTimer.Stop();
         mapper.Stop();
         var handle = new WindowInteropHelper(this).Handle;
         UnregisterHotKey(handle, HotkeyPause);

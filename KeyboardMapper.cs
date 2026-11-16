@@ -33,13 +33,56 @@ internal sealed class KeyboardMapper {
   focusHook=SetWinEventHook(EVENT_OBJECT_FOCUS,EVENT_OBJECT_FOCUS,IntPtr.Zero,winEventCallback,0,0,WINEVENT_OUTOFCONTEXT);
   if (foregroundHook==IntPtr.Zero || focusHook==IntPtr.Zero) { Stop(); throw new Win32Exception("SetWinEventHook"); }
  }
- internal void Stop() { if (Enabled) { UnhookWindowsHookEx(hook); hook=IntPtr.Zero; } if (foregroundHook!=IntPtr.Zero) { UnhookWinEvent(foregroundHook); foregroundHook=IntPtr.Zero; } if (focusHook!=IntPtr.Zero) { UnhookWinEvent(focusHook); focusHook=IntPtr.Zero; } rightAltHeld=false; checkedWindow=IntPtr.Zero; checkedElevated=checkedExcluded=false; ElevatedApp=ExcludedApp=null; previous='\0'; undo=null; previousWindow=IntPtr.Zero; }
+ internal void Stop() { if (Enabled) { UnhookWindowsHookEx(hook); hook=IntPtr.Zero; } if (foregroundHook!=IntPtr.Zero) { UnhookWinEvent(foregroundHook); foregroundHook=IntPtr.Zero; } if (focusHook!=IntPtr.Zero) { UnhookWinEvent(focusHook); focusHook=IntPtr.Zero; } rightAltHeld=false; layoutTimer?.Stop(); checkedWindow=IntPtr.Zero; checkedElevated=checkedExcluded=false; ElevatedApp=ExcludedApp=null; previous='\0'; undo=null; previousWindow=IntPtr.Zero; }
  private void OnWinEvent(IntPtr winEventHook,uint evt,IntPtr hwnd,int idObject,int idChild,uint thread,uint time) {
   // Focus moved (another window, another control, a click into a different field): a half-typed pair must not combine across it.
   previous='\0'; undo=null;
   if (evt==EVENT_SYSTEM_FOREGROUND) { previousWindow=IntPtr.Zero; checkedWindow=IntPtr.Zero; }
+  RefreshForeground();
+ }
+ /// <summary>Raised (on the hook thread, i.e. the UI thread) when the layout or skip status of the foreground app changes.</summary>
+ internal event Action? StateChanged;
+ private (ushort?, string?, string?) notified;
+ private System.Windows.Threading.DispatcherTimer? layoutTimer;
+ private void Notify() {
+  var current=(LastInputLanguage,ElevatedApp,ExcludedApp);
+  if (current==notified) return;
+  notified=current; StateChanged?.Invoke();
+ }
+ private void Inspect(IntPtr window,uint pid) {
+  checkedOwn=pid==(uint)Environment.ProcessId;
+  if (checkedOwn || window==checkedWindow) return;
+  checkedWindow=window;
+  string? exe=ForegroundProcess.ExeName(pid);
+  checkedElevated=!ForegroundProcess.SelfElevated && ForegroundProcess.IsElevated(pid);
+  checkedExcluded=exe!=null && excludedApps.Contains(exe);
+  ElevatedApp=checkedElevated ? exe ?? "?" : null;
+  ExcludedApp=checkedExcluded ? exe : null;
+ }
+ /// <summary>Re-reads layout and skip status of the foreground window (after WinEvents and, debounced, after key presses such as Win+Space).</summary>
+ private void RefreshForeground() {
+  if (!Enabled) return;
+  var window=GetForegroundWindow(); if (window==IntPtr.Zero) return;
+  var thread=GetWindowThreadProcessId(window,out uint pid);
+  Inspect(window,pid);
+  LastInputLanguage=(ushort)(InputLayout(window,thread).ToInt64() & 0xffff);
+  Notify();
  }
  private IntPtr OnKey(int code, IntPtr message, IntPtr data) {
+  var result=ProcessKey(code,message,data);
+  if (code>=0 && Enabled) {
+   Notify();
+   layoutTimer??=CreateLayoutTimer();
+   layoutTimer.Stop(); layoutTimer.Start();
+  }
+  return result;
+ }
+ private System.Windows.Threading.DispatcherTimer CreateLayoutTimer() {
+  var timer=new System.Windows.Threading.DispatcherTimer { Interval=TimeSpan.FromMilliseconds(250) };
+  timer.Tick+=(_,_)=>{ timer.Stop(); RefreshForeground(); };
+  return timer;
+ }
+ private IntPtr ProcessKey(int code, IntPtr message, IntPtr data) {
   if (code<0) return CallNextHookEx(hook,code,message,data);
   var key=Marshal.PtrToStructure<Kbd>(data);
   if ((key.flags & LLKHF_INJECTED)!=0) return CallNextHookEx(hook,code,message,data);
@@ -49,16 +92,8 @@ internal sealed class KeyboardMapper {
   if (IsModifier(key.vk)) return CallNextHookEx(hook,code,message,data);
   var window=GetForegroundWindow(); if (window==IntPtr.Zero) return CallNextHookEx(hook,code,message,data);
   var thread=GetWindowThreadProcessId(window,out uint pid);
-  checkedOwn=pid==(uint)Environment.ProcessId;
+  Inspect(window,pid);
   if (!checkedOwn) {
-   if (window!=checkedWindow) {
-    checkedWindow=window;
-    string? exe=ForegroundProcess.ExeName(pid);
-    checkedElevated=!ForegroundProcess.SelfElevated && ForegroundProcess.IsElevated(pid);
-    checkedExcluded=exe!=null && excludedApps.Contains(exe);
-    ElevatedApp=checkedElevated ? exe ?? "?" : null;
-    ExcludedApp=checkedExcluded ? exe : null;
-   }
    if (checkedElevated || checkedExcluded) { previous='\0'; undo=null; previousWindow=IntPtr.Zero; return CallNextHookEx(hook,code,message,data); }
   } long layout=InputLayout(window,thread).ToInt64(); LastInputLanguage=(ushort)(layout & 0xffff);
   if ((layout & 0xffff)!=0x0443) { previous='\0'; undo=null; previousWindow=IntPtr.Zero; return CallNextHookEx(hook,code,message,data); }
