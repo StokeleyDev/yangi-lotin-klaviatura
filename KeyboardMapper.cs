@@ -4,7 +4,8 @@ using System.Runtime.InteropServices;
 namespace UzbekKeyboard;
 internal sealed class KeyboardMapper {
  private const int WH_KEYBOARD_LL=13, WM_KEYDOWN=0x100, WM_SYSKEYDOWN=0x104, LLKHF_INJECTED=0x10;
- private readonly HookProc callback; private readonly HookProc mouseCallback; private IntPtr hook; private IntPtr mouseHook;
+ private const uint EVENT_SYSTEM_FOREGROUND=0x0003, EVENT_OBJECT_FOCUS=0x8005, WINEVENT_OUTOFCONTEXT=0;
+ private readonly HookProc callback; private readonly WinEventProc winEventCallback; private IntPtr hook; private IntPtr foregroundHook, focusHook;
  private bool rightAltHeld;
  private char previous; private IntPtr previousWindow; private string? undo;
  internal ushort? LastInputLanguage { get; private set; }
@@ -22,10 +23,22 @@ internal sealed class KeyboardMapper {
 
  internal void ResetPending() { previous='\0'; undo=null; }
  internal bool Enabled => hook != IntPtr.Zero;
- internal KeyboardMapper() { callback=OnKey; mouseCallback=OnMouse; }
- internal void Start() { if (Enabled) return; hook=SetWindowsHookEx(WH_KEYBOARD_LL, callback, GetModuleHandle(null), 0); if (hook==IntPtr.Zero) throw new Win32Exception(Marshal.GetLastWin32Error()); mouseHook=SetWindowsHookEx(14, mouseCallback, GetModuleHandle(null), 0); if (mouseHook==IntPtr.Zero) { var error=Marshal.GetLastWin32Error(); UnhookWindowsHookEx(hook); hook=IntPtr.Zero; throw new Win32Exception(error); } }
- internal void Stop() { if (Enabled) { UnhookWindowsHookEx(hook); hook=IntPtr.Zero; } if (mouseHook!=IntPtr.Zero) { UnhookWindowsHookEx(mouseHook); mouseHook=IntPtr.Zero; } rightAltHeld=false; checkedWindow=IntPtr.Zero; checkedElevated=checkedExcluded=false; ElevatedApp=ExcludedApp=null; previous='\0'; undo=null; previousWindow=IntPtr.Zero; }
- private IntPtr OnMouse(int code, IntPtr message, IntPtr data) { if (code>=0 && (message.ToInt64()==0x201 || message.ToInt64()==0x204 || message.ToInt64()==0x207)) { previous='\0'; undo=null; } return CallNextHookEx(mouseHook,code,message,data); }
+ internal KeyboardMapper() { callback=OnKey; winEventCallback=OnWinEvent; }
+ internal void Start() {
+  if (Enabled) return;
+  hook=SetWindowsHookEx(WH_KEYBOARD_LL, callback, GetModuleHandle(null), 0);
+  if (hook==IntPtr.Zero) throw new Win32Exception(Marshal.GetLastWin32Error());
+  // Out-of-context WinEvents arrive on this (UI) thread's message loop; they replace the old global mouse hook.
+  foregroundHook=SetWinEventHook(EVENT_SYSTEM_FOREGROUND,EVENT_SYSTEM_FOREGROUND,IntPtr.Zero,winEventCallback,0,0,WINEVENT_OUTOFCONTEXT);
+  focusHook=SetWinEventHook(EVENT_OBJECT_FOCUS,EVENT_OBJECT_FOCUS,IntPtr.Zero,winEventCallback,0,0,WINEVENT_OUTOFCONTEXT);
+  if (foregroundHook==IntPtr.Zero || focusHook==IntPtr.Zero) { Stop(); throw new Win32Exception("SetWinEventHook"); }
+ }
+ internal void Stop() { if (Enabled) { UnhookWindowsHookEx(hook); hook=IntPtr.Zero; } if (foregroundHook!=IntPtr.Zero) { UnhookWinEvent(foregroundHook); foregroundHook=IntPtr.Zero; } if (focusHook!=IntPtr.Zero) { UnhookWinEvent(focusHook); focusHook=IntPtr.Zero; } rightAltHeld=false; checkedWindow=IntPtr.Zero; checkedElevated=checkedExcluded=false; ElevatedApp=ExcludedApp=null; previous='\0'; undo=null; previousWindow=IntPtr.Zero; }
+ private void OnWinEvent(IntPtr winEventHook,uint evt,IntPtr hwnd,int idObject,int idChild,uint thread,uint time) {
+  // Focus moved (another window, another control, a click into a different field): a half-typed pair must not combine across it.
+  previous='\0'; undo=null;
+  if (evt==EVENT_SYSTEM_FOREGROUND) { previousWindow=IntPtr.Zero; checkedWindow=IntPtr.Zero; }
+ }
  private IntPtr OnKey(int code, IntPtr message, IntPtr data) {
   if (code<0) return CallNextHookEx(hook,code,message,data);
   var key=Marshal.PtrToStructure<Kbd>(data);
@@ -122,6 +135,9 @@ internal sealed class KeyboardMapper {
  }
  private static bool Down(int v)=>(GetAsyncKeyState(v)&0x8000)!=0;
  private delegate IntPtr HookProc(int n,IntPtr w,IntPtr l);
+ private delegate void WinEventProc(IntPtr hook,uint evt,IntPtr hwnd,int idObject,int idChild,uint thread,uint time);
+ [DllImport("user32.dll")] private static extern IntPtr SetWinEventHook(uint min,uint max,IntPtr module,WinEventProc callback,uint pid,uint thread,uint flags);
+ [DllImport("user32.dll")] private static extern bool UnhookWinEvent(IntPtr hook);
  [StructLayout(LayoutKind.Sequential)] private struct Kbd { public uint vk,scan,flags,time; public UIntPtr extra; }
  [StructLayout(LayoutKind.Sequential)] private struct RECT { public int left,top,right,bottom; }
  [StructLayout(LayoutKind.Sequential)] private struct GUITHREADINFO { public int cbSize; public uint flags; public IntPtr hwndActive,hwndFocus,hwndCapture,hwndMenuOwner,hwndMoveSize,hwndCaret; public RECT rcCaret; }
