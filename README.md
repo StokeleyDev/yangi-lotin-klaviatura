@@ -14,6 +14,7 @@ Joriy versiya / Текущая версия: **1.2.4**.
 - [Portable ZIP — o‘rnatmasdan ishga tushirish / Без установки](https://github.com/StokeleyDev/yangi-lotin-klaviatura/releases/latest/download/Yangi-Lotin-Portable.zip)
 - [SHA-256 nazorat summalari / Контрольные суммы](https://github.com/StokeleyDev/yangi-lotin-klaviatura/releases/latest/download/SHA256SUMS.txt)
 - [So‘nggi versiya / Последняя версия](https://github.com/StokeleyDev/yangi-lotin-klaviatura/releases/latest) · [Barcha versiyalar / Все версии](https://github.com/StokeleyDev/yangi-lotin-klaviatura/releases)
+- [O‘zgarishlar tarixi / История изменений](CHANGELOG.md)
 
 ![Yangi o‘zbek alifbosi uchun Windows klaviaturasi — Yangi lotin klaviatura dasturi](assets/cover.png)
 
