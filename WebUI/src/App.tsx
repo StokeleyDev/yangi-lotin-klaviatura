@@ -42,12 +42,17 @@ const copy = {
 };
 const letters = [{from:'sh', to:'ş', word:'shahar', result:'şahar'}, {from:'ch', to:'ç', word:'chiroyli', result:'çiroyli'}, {from:"o'", to:'ö', word:"o'zbek", result:'özbek'}, {from:"g'", to:'ğ', word:"g'oya", result:'ğoya'}];
 
+const themeKey = 'yangi-lotin-theme';
+
 export default function App() {
   const [language, setLanguage] = useState<Language>('uz');
   const [native, setNative] = useState<NativeState | null>(null);
   const [text, setText] = useState('');
   const [sheet, setSheet] = useState(false);
-  const [theme, setTheme] = useState(0);
+  const [theme, setTheme] = useState(() => {
+    try { const saved = Number(localStorage.getItem(themeKey)); return saved === 1 || saved === 2 ? saved : 0; }
+    catch { return 0; }
+  });
   const [notice, setNotice] = useState('');
   const [pending, setPending] = useState(false);
   const [appName, setAppName] = useState('');
@@ -82,6 +87,7 @@ export default function App() {
   useEffect(() => {
     if (theme === 0) delete document.documentElement.dataset.theme;
     else document.documentElement.dataset.theme = theme === 1 ? 'light' : 'dark';
+    try { localStorage.setItem(themeKey, String(theme)); } catch { /* storage unavailable: theme stays for this session only */ }
   }, [theme]);
 
   const changeLanguage = (index: number) => {
