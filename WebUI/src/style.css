@@ -1,5 +1,5 @@
 * { box-sizing: border-box; }
-:root { font-family:var(--app-font); --app-font:-apple-system,BlinkMacSystemFont,"Inter Variable","Segoe UI",sans-serif; --lg-font:var(--app-font); -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; color: #242338; font-synthesis: none; color-scheme: light dark; --ink:#242338; --muted:#57566c; --field:rgba(255,255,255,.22); --wallpaper:url('./assets/uzbek-light.png'); --canvas:#e2e5ff; --wallpaper-ink:#242338; --wallpaper-muted:#434f6d; --wallpaper-shadow:none; }
+:root { font-family:var(--app-font); --app-font:-apple-system,BlinkMacSystemFont,"Inter Variable","Segoe UI",sans-serif; --lg-font:var(--app-font); -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; color: #242338; font-synthesis: none; color-scheme: light dark; --ink:#242338; --muted:#57566c; --field:rgba(255,255,255,.22); --wallpaper:url('./assets/uzbek-light.webp'); --canvas:#e2e5ff; --wallpaper-ink:#242338; --wallpaper-muted:#434f6d; --wallpaper-shadow:none; }
 html[data-theme="light"] { color-scheme:light; }
 body { margin:0; min-width:360px; background:var(--canvas); }
 button,textarea { font:inherit; }
@@ -51,11 +51,11 @@ footer { display:flex; align-items:center; justify-content:center; gap:7px; colo
 h3 { font-size:16px; font-weight:500; margin:0; }
 .windows-setting { border-top:1px solid #8883; padding-top:12px; margin:6px 0; }
 .windows-setting p { font-size:14px; line-height:1.6; color:var(--muted); }
-html[data-theme="dark"] { --ink:#f6f3ff; --muted:#d6d3e4; --panel:#1b2035; --panel-border:#394057; --inset:#2d344e; --editor:#111728; --wallpaper:url('./assets/uzbek-dark.png'); --canvas:#0c1028; --wallpaper-ink:#ffffff; --wallpaper-muted:#e0e8ff; --wallpaper-shadow:0 1px 5px #07133140; color:#f6f3ff; color-scheme:dark; }
+html[data-theme="dark"] { --ink:#f6f3ff; --muted:#d6d3e4; --panel:#1b2035; --panel-border:#394057; --inset:#2d344e; --editor:#111728; --wallpaper:url('./assets/uzbek-dark.webp'); --canvas:#0c1028; --wallpaper-ink:#ffffff; --wallpaper-muted:#e0e8ff; --wallpaper-shadow:0 1px 5px #07133140; color:#f6f3ff; color-scheme:dark; }
 html[data-theme="dark"] .status-dot.on { background:#58d18e; }
 html[data-theme="dark"] .error { color:#ffabb9; }
 @media(prefers-color-scheme:dark) {
- html:not([data-theme="light"]) { --ink:#f6f3ff; --muted:#d6d3e4; --panel:#1b2035; --panel-border:#394057; --inset:#2d344e; --editor:#111728; --wallpaper:url('./assets/uzbek-dark.png'); --canvas:#0c1028; --wallpaper-ink:#ffffff; --wallpaper-muted:#e0e8ff; --wallpaper-shadow:0 1px 5px #07133140; color:#f6f3ff; }
+ html:not([data-theme="light"]) { --ink:#f6f3ff; --muted:#d6d3e4; --panel:#1b2035; --panel-border:#394057; --inset:#2d344e; --editor:#111728; --wallpaper:url('./assets/uzbek-dark.webp'); --canvas:#0c1028; --wallpaper-ink:#ffffff; --wallpaper-muted:#e0e8ff; --wallpaper-shadow:0 1px 5px #07133140; color:#f6f3ff; }
  html:not([data-theme="light"]) .status-dot.on { background:#58d18e; }
  html:not([data-theme="light"]) .error { color:#ffabb9; }
 }
