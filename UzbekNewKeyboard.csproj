@@ -7,10 +7,11 @@
   <ImplicitUsings>enable</ImplicitUsings>
   <AssemblyName>Yangi lotin klaviatura</AssemblyName>
   <Version>1.2.4</Version>
-  <DefaultItemExcludes>$(DefaultItemExcludes);installer/**;WebUI/node_modules/**;artifacts/**</DefaultItemExcludes>
+  <DefaultItemExcludes>$(DefaultItemExcludes);installer/**;tests/**;WebUI/node_modules/**;artifacts/**</DefaultItemExcludes>
   <ApplicationIcon>Assets\yangi-logo.ico</ApplicationIcon>
  </PropertyGroup>
  <ItemGroup>
+  <InternalsVisibleTo Include="UzbekKeyboard.Tests" />
   <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4314.35" />
   <Resource Include="Assets\yangi-logo.png" />
   <Content Include="WebUI\dist\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest">
