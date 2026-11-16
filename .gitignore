@@ -5,3 +5,5 @@ WebUI/dist/
 WebUI/*.tsbuildinfo
 .vs/
 artifacts/
+dist/
+installer/payload.zip
