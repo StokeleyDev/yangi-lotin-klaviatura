@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Windows.Automation;
 using System.Runtime.InteropServices;
 namespace UzbekKeyboard;
 internal sealed class KeyboardMapper {
@@ -9,14 +10,21 @@ internal sealed class KeyboardMapper {
  internal ushort? LastInputLanguage { get; private set; }
  /// <summary>Last foreground app (other than ours) that runs elevated and therefore is skipped; null when the last app is normal.</summary>
  internal string? ElevatedApp { get; private set; }
- private IntPtr checkedWindow; private bool checkedElevated;
+ private IntPtr checkedWindow; private bool checkedElevated, checkedExcluded, checkedOwn;
+ /// <summary>Last foreground app that is in the stop list; null otherwise.</summary>
+ internal string? ExcludedApp { get; private set; }
+ private volatile HashSet<string> excludedApps=new(StringComparer.OrdinalIgnoreCase);
+ internal void SetExcludedApps(IEnumerable<string> apps) { excludedApps=new HashSet<string>(apps,StringComparer.OrdinalIgnoreCase); checkedWindow=IntPtr.Zero; ExcludedApp=null; }
+ private volatile bool paused;
+ internal bool Paused { get=>paused; set { paused=value; previous='\0'; undo=null; } }
+ private static Task<bool>? passwordCheck;
 
 
  internal void ResetPending() { previous='\0'; undo=null; }
  internal bool Enabled => hook != IntPtr.Zero;
  internal KeyboardMapper() { callback=OnKey; mouseCallback=OnMouse; }
  internal void Start() { if (Enabled) return; hook=SetWindowsHookEx(WH_KEYBOARD_LL, callback, GetModuleHandle(null), 0); if (hook==IntPtr.Zero) throw new Win32Exception(Marshal.GetLastWin32Error()); mouseHook=SetWindowsHookEx(14, mouseCallback, GetModuleHandle(null), 0); if (mouseHook==IntPtr.Zero) { var error=Marshal.GetLastWin32Error(); UnhookWindowsHookEx(hook); hook=IntPtr.Zero; throw new Win32Exception(error); } }
- internal void Stop() { if (Enabled) { UnhookWindowsHookEx(hook); hook=IntPtr.Zero; } if (mouseHook!=IntPtr.Zero) { UnhookWindowsHookEx(mouseHook); mouseHook=IntPtr.Zero; } rightAltHeld=false; checkedWindow=IntPtr.Zero; checkedElevated=false; ElevatedApp=null; previous='\0'; undo=null; previousWindow=IntPtr.Zero; }
+ internal void Stop() { if (Enabled) { UnhookWindowsHookEx(hook); hook=IntPtr.Zero; } if (mouseHook!=IntPtr.Zero) { UnhookWindowsHookEx(mouseHook); mouseHook=IntPtr.Zero; } rightAltHeld=false; checkedWindow=IntPtr.Zero; checkedElevated=checkedExcluded=false; ElevatedApp=ExcludedApp=null; previous='\0'; undo=null; previousWindow=IntPtr.Zero; }
  private IntPtr OnMouse(int code, IntPtr message, IntPtr data) { if (code>=0 && (message.ToInt64()==0x201 || message.ToInt64()==0x204 || message.ToInt64()==0x207)) { previous='\0'; undo=null; } return CallNextHookEx(mouseHook,code,message,data); }
  private IntPtr OnKey(int code, IntPtr message, IntPtr data) {
   if (code<0) return CallNextHookEx(hook,code,message,data);
@@ -24,17 +32,21 @@ internal sealed class KeyboardMapper {
   if ((key.flags & LLKHF_INJECTED)!=0) return CallNextHookEx(hook,code,message,data);
   bool isDown=message.ToInt64()==WM_KEYDOWN || message.ToInt64()==WM_SYSKEYDOWN;
   if (key.vk==0xA5 || (key.vk==0x12 && (key.flags & 1)!=0)) rightAltHeld=isDown;
-  if (!isDown) return CallNextHookEx(hook,code,message,data);
+  if (!isDown || paused) return CallNextHookEx(hook,code,message,data);
   if (IsModifier(key.vk)) return CallNextHookEx(hook,code,message,data);
   var window=GetForegroundWindow(); if (window==IntPtr.Zero) return CallNextHookEx(hook,code,message,data);
   var thread=GetWindowThreadProcessId(window,out uint pid);
-  if (pid!=(uint)Environment.ProcessId) {
+  checkedOwn=pid==(uint)Environment.ProcessId;
+  if (!checkedOwn) {
    if (window!=checkedWindow) {
     checkedWindow=window;
+    string? exe=ForegroundProcess.ExeName(pid);
     checkedElevated=!ForegroundProcess.SelfElevated && ForegroundProcess.IsElevated(pid);
-    ElevatedApp=checkedElevated ? ForegroundProcess.ExeName(pid) ?? "?" : null;
+    checkedExcluded=exe!=null && excludedApps.Contains(exe);
+    ElevatedApp=checkedElevated ? exe ?? "?" : null;
+    ExcludedApp=checkedExcluded ? exe : null;
    }
-   if (checkedElevated) { previous='\0'; undo=null; previousWindow=IntPtr.Zero; return CallNextHookEx(hook,code,message,data); }
+   if (checkedElevated || checkedExcluded) { previous='\0'; undo=null; previousWindow=IntPtr.Zero; return CallNextHookEx(hook,code,message,data); }
   } long layout=GetKeyboardLayout(thread).ToInt64(); LastInputLanguage=(ushort)(layout & 0xffff);
   if ((layout & 0xffff)!=0x0443) { previous='\0'; undo=null; previousWindow=IntPtr.Zero; return CallNextHookEx(hook,code,message,data); }
   if (window != previousWindow) { previous='\0'; undo=null; previousWindow=window; }
@@ -51,6 +63,7 @@ internal sealed class KeyboardMapper {
   char first=char.ToLowerInvariant(previous), second=char.ToLowerInvariant(current);
   bool apostrophe=TextConverter.IsApostrophe(current);
   char replacement=(first,second) switch { ('s','h')=>'ş', ('c','h')=>'ç', ('o',_) when apostrophe=>'ö', ('g',_) when apostrophe=>'ğ', _=>'\0' };
+  if (replacement!='\0' && !checkedOwn && FocusedIsPassword()) { previous='\0'; return CallNextHookEx(hook,code,message,data); }
   if (replacement!='\0') {
    if (char.IsUpper(previous)) replacement=char.ToUpperInvariant(replacement);
    string original=string.Concat(previous,current); previous='\0';
@@ -71,6 +84,13 @@ internal sealed class KeyboardMapper {
   return SendInput((uint)inputs.Count,inputs.ToArray(),Marshal.SizeOf<INPUT>())==inputs.Count;
  }
 
+ /// <summary>UI Automation IsPassword of the focused element. Runs off the hook thread; on error, timeout or a check still in flight the field counts as not a password.</summary>
+ private static bool FocusedIsPassword() {
+  if (passwordCheck is { IsCompleted: false }) return false;
+  var check=Task.Run(()=>{ try { return AutomationElement.FocusedElement?.Current.IsPassword==true; } catch { return false; } });
+  passwordCheck=check;
+  try { return check.Wait(60) && check.Result; } catch { return false; }
+ }
  private static bool IsModifier(uint vk)=>vk is 0x10 or 0x11 or 0x12 or 0x14 or (>=0xA0 and <=0xA5) or 0x5B or 0x5C;
  private static char Translate(Kbd key,bool shift,IntPtr layout) {
   var state=new byte[256];

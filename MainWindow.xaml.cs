@@ -1,7 +1,9 @@
 using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
+using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Interop;
 using Microsoft.Web.WebView2.Core;
 
 namespace UzbekKeyboard;
@@ -17,6 +19,9 @@ public partial class MainWindow : Window
     private bool ready;
     private bool closing;
     private bool initializing;
+    private AppSettings settings = AppSettings.Load();
+    private bool hotkeyRegistered;
+    private const int WM_HOTKEY = 0x312, HotkeyPause = 1, HotkeyPauseCancel = 2;
 
     public MainWindow()
     {
@@ -27,6 +32,8 @@ public partial class MainWindow : Window
         Height = Math.Min(Height, Math.Max(360, workArea.Height - 24));
         MinWidth = Math.Min(MinWidth, Width);
         MinHeight = Math.Min(MinHeight, Height);
+        mapper.SetExcludedApps(settings.ExcludedApps);
+        SourceInitialized += (_, _) => RegisterPauseHotkey();
         Loaded += async (_, _) => await InitializeBrowserAsync();
         statusTimer.Tick += (_, _) => SendState();
     }
@@ -121,6 +128,22 @@ public partial class MainWindow : Window
                         enabled.ValueKind is JsonValueKind.True or JsonValueKind.False)
                         SetEnabled(enabled.GetBoolean());
                     break;
+                case "setPaused" when ready:
+                    if (data.TryGetProperty("paused", out var paused) &&
+                        paused.ValueKind is JsonValueKind.True or JsonValueKind.False)
+                        SetPaused(paused.GetBoolean());
+                    break;
+                case "setExcludedApps" when ready:
+                    if (data.TryGetProperty("apps", out var apps) && apps.ValueKind == JsonValueKind.Array)
+                    {
+                        var list = AppSettings.NormalizeApps(apps.EnumerateArray()
+                            .Where(a => a.ValueKind == JsonValueKind.String).Select(a => a.GetString()));
+                        settings.ExcludedApps = list;
+                        mapper.SetExcludedApps(list);
+                        try { settings.Save(); error = null; } catch (Exception ex) { error = ex.Message; }
+                        SendState(force: true);
+                    }
+                    break;
                 case "setLanguage" when ready:
                     if (data.TryGetProperty("language", out var lang) && lang.ValueKind == JsonValueKind.String)
                     {
@@ -162,6 +185,33 @@ public partial class MainWindow : Window
         SendState(force: true);
     }
 
+    private void RegisterPauseHotkey()
+    {
+        var handle = new WindowInteropHelper(this).Handle;
+        HwndSource.FromHwnd(handle)?.AddHook(WndProc);
+        const uint modifiers = 0x1 | 0x2 | 0x4000; // MOD_ALT | MOD_CONTROL | MOD_NOREPEAT
+        // With Ctrl held, Pause is often reported as VK_CANCEL, so both are registered.
+        bool pause = RegisterHotKey(handle, HotkeyPause, modifiers, 0x13);
+        bool cancel = RegisterHotKey(handle, HotkeyPauseCancel, modifiers, 0x03);
+        hotkeyRegistered = pause || cancel;
+    }
+
+    private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+    {
+        if (msg == WM_HOTKEY && wParam.ToInt32() is HotkeyPause or HotkeyPauseCancel)
+        {
+            SetPaused(!mapper.Paused);
+            handled = true;
+        }
+        return IntPtr.Zero;
+    }
+
+    private void SetPaused(bool paused)
+    {
+        mapper.Paused = paused;
+        SendState(force: true);
+    }
+
     private void SendState(bool force = false)
     {
         if (!ready || closing) return;
@@ -169,14 +219,17 @@ public partial class MainWindow : Window
         Title = strings.WindowTitle;
         string status = error != null ? strings.StatusErrorPrefix + error :
             !mapper.Enabled ? strings.StatusDisabled :
+            mapper.Paused ? strings.StatusPaused :
             mapper.ElevatedApp is string elevatedApp ? string.Format(strings.StatusElevated, elevatedApp) :
             mapper.LastInputLanguage is ushort lang && lang != 0x0443 ?
                 (language == AppLanguage.Uzbek ? "Win + Space: O‘zbek (lotin) tilini tanlang" : "Win + Пробел: выберите узбекский (латиница)") :
+                mapper.ExcludedApp is string excludedApp ? string.Format(strings.StatusExcluded, excludedApp) :
                 strings.StatusEnabled;
         string json = JsonSerializer.Serialize(new
         {
             type = "state", language = language == AppLanguage.Russian ? "ru" : "uz",
-            enabled = mapper.Enabled, status, error, strings
+            enabled = mapper.Enabled, paused = mapper.Paused, excludedApps = settings.ExcludedApps,
+            hotkey = hotkeyRegistered ? null : strings.HotkeyUnavailable, status, error, strings
         }, jsonOptions);
         if (force || json != lastState)
         {
@@ -193,6 +246,11 @@ public partial class MainWindow : Window
         ready = false;
         statusTimer.Stop();
         mapper.Stop();
+        var handle = new WindowInteropHelper(this).Handle;
+        UnregisterHotKey(handle, HotkeyPause);
+        UnregisterHotKey(handle, HotkeyPauseCancel);
         Browser.Dispose();
     }
+    [DllImport("user32.dll", SetLastError = true)] private static extern bool RegisterHotKey(IntPtr hwnd, int id, uint modifiers, uint vk);
+    [DllImport("user32.dll")] private static extern bool UnregisterHotKey(IntPtr hwnd, int id);
 }

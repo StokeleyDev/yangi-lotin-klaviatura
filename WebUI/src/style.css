@@ -108,3 +108,11 @@ html[data-theme="dark"] .error { color:#ffabb9; }
 }
 
 main { margin-top:12px; }
+.setting-hint { margin:4px 0 8px; font-size:13px; color:var(--muted); }
+.setting-row > [role="switch"], .setting-row > button:last-child { margin-left:auto; }
+.excluded-list { list-style:none; margin:0 0 8px; padding:0; display:flex; flex-direction:column; gap:6px; max-height:160px; overflow:auto; }
+.excluded-list li { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.excluded-list li > span { font-family:ui-monospace,Consolas,monospace; font-size:13px; }
+.excluded-add { display:flex; gap:8px; margin-bottom:12px; }
+.excluded-add input { flex:1; min-width:0; padding:8px 12px; border-radius:10px; border:1px solid var(--panel-border, #c9c6dc); background:var(--field); color:inherit; font:inherit; font-size:14px; }
+.excluded-add input:focus-visible { outline:2px solid #34c759; outline-offset:1px; }

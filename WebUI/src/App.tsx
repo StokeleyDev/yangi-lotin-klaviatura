@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { GlassButton, GlassSegmented, GlassSheet, GlassSwitch } from '@zakisheriff/liquid-glass';
-import { ArrowRight, Check, CheckCheck, Copy, Keyboard, Languages, Monitor, Moon, Settings2, Sun } from 'lucide-react';
+import { ArrowRight, Ban, Check, CheckCheck, Copy, Keyboard, Languages, Monitor, Moon, Pause, Plus, Settings2, Sun, X } from 'lucide-react';
 import appIcon from './assets/app-icon.png';
 
 type Language = 'uz' | 'ru';
-type NativeState = {type: 'state'; enabled: boolean; language: Language; status: string; error?: string | null};
+type NativeState = {type: 'state'; enabled: boolean; paused?: boolean; excludedApps?: string[]; hotkey?: string | null; language: Language; status: string; error?: string | null};
 type WebView = {postMessage: (message: unknown) => void; addEventListener: (type: 'message', cb: (event: MessageEvent) => void) => void; removeEventListener: (type: 'message', cb: (event: MessageEvent) => void) => void};
 declare global { interface Window { chrome?: {webview?: WebView} } }
 const host = window.chrome?.webview;
@@ -19,6 +19,9 @@ const copy = {
     footer: 'Oyna yopilganda avtomatik almashtirish to‘xtaydi.', undo: 'Almashtirishni bekor qilish',
     ready: 'Ulanmoqda…', preview: 'Interfeys ko‘rinishi — klaviatura faqat Windows ilovasida ishlaydi',
     language: 'Interfeys tili', done: 'Tayyor', count: 'belgi', converted: 'Matn o‘zgartirildi', limit: '200 000 belgigacha',
+    pause: 'Pauza', pauseHint: 'Ctrl + Alt + Pause — istalgan ilovadan pauza yoki davom ettirish',
+    excluded: 'Istisno ilovalar', excludedHint: 'Bu dasturlarda almashtirish ishlamaydi (exe fayl nomi).', excludedPlaceholder: 'masalan, keepass.exe',
+    add: 'Qo‘shish', remove: 'O‘chirish', excludedEmpty: 'Ro‘yxat bo‘sh',
     copyError: 'Nusxalab bo‘lmadi. Ctrl + C dan foydalaning.', connectionError: 'Ilova bilan aloqa uzildi. Qayta oching.'
   },
   ru: {
@@ -31,6 +34,9 @@ const copy = {
     footer: 'При закрытии окна автоматическая замена прекращается.', undo: 'Отменить замену',
     ready: 'Подключение…', preview: 'Предпросмотр — клавиатура работает только в Windows-приложении',
     language: 'Язык интерфейса', done: 'Готово', count: 'символов', converted: 'Текст преобразован', limit: 'До 200 000 символов',
+    pause: 'Пауза', pauseHint: 'Ctrl + Alt + Pause — пауза и продолжение из любого приложения',
+    excluded: 'Стоп-лист приложений', excludedHint: 'В этих программах замена не работает (имя exe-файла).', excludedPlaceholder: 'например, keepass.exe',
+    add: 'Добавить', remove: 'Удалить', excludedEmpty: 'Список пуст',
     copyError: 'Не удалось скопировать. Используйте Ctrl + C.', connectionError: 'Нет ответа от приложения. Откройте его заново.'
   }
 };
@@ -44,6 +50,7 @@ export default function App() {
   const [theme, setTheme] = useState(0);
   const [notice, setNotice] = useState('');
   const [pending, setPending] = useState(false);
+  const [appName, setAppName] = useState('');
   const request = useRef(0);
   const timeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const editor = useRef<HTMLTextAreaElement>(null);
@@ -90,6 +97,9 @@ export default function App() {
     host.postMessage({action: 'convert', text, id});
     timeout.current = setTimeout(() => { setPending(false); setNotice(t.connectionError); request.current++; }, 10000);
   };
+  const excludedApps = native?.excludedApps ?? [];
+  const setExcluded = (apps: string[]) => host?.postMessage({action: 'setExcludedApps', apps});
+  const addApp = () => { const name = appName.trim(); if (!name) return; setExcluded([...excludedApps, name]); setAppName(''); };
   const copyText = async () => {
     try { await navigator.clipboard.writeText(text); setNotice(t.copied); }
     catch { setNotice(t.copyError); editor.current?.focus(); editor.current?.select(); }
@@ -110,7 +120,7 @@ export default function App() {
           <section className="solid-panel status-card">
             <div className="status-icon"><Keyboard size={25} strokeWidth={1.5}/></div>
             <div className="status-content"><h2>{t.automatic}</h2><p>{t.automaticHint}</p>
-              <div className={'status-line ' + (native?.error ? 'error' : '')} role="status"><span className={'status-dot ' + (native?.enabled ? 'on' : '')}/>{native?.status ?? (host ? t.ready : 'Windows · UZB LAT')}</div>
+              <div className={'status-line ' + (native?.error ? 'error' : '')} role="status"><span className={'status-dot ' + (native?.enabled && !native.paused ? 'on' : '')}/>{native?.status ?? (host ? t.ready : 'Windows · UZB LAT')}</div>
             </div>
             <GlassSwitch checked={native?.enabled ?? false} onChange={enabled => host?.postMessage({action:'setEnabled', enabled})} disabled={!native} aria-label={t.automatic}/>
           </section>
@@ -143,6 +153,18 @@ export default function App() {
           <h2>{t.settings}</h2>
           <div className="setting-row"><Languages size={21}/><h3>{t.language}</h3></div>
           <GlassSegmented options={['O‘zbek', 'Русский']} value={language === 'uz' ? 0 : 1} onChange={changeLanguage} aria-label={t.language}/>
+          <div className="setting-row"><Pause size={21}/><h3>{t.pause}</h3><GlassSwitch checked={native?.paused ?? false} onChange={paused => host?.postMessage({action:'setPaused', paused})} disabled={!native} aria-label={t.pause}/></div>
+          <p className="setting-hint">{native?.hotkey ?? t.pauseHint}</p>
+          <div className="setting-row"><Ban size={21}/><h3>{t.excluded}</h3></div>
+          <p className="setting-hint">{t.excludedHint}</p>
+          <ul className="excluded-list" aria-label={t.excluded}>
+            {excludedApps.length === 0 && <li className="setting-hint">{t.excludedEmpty}</li>}
+            {excludedApps.map(app => <li key={app}><span>{app}</span><GlassButton icon={<X size={14}/>} aria-label={t.remove + ' ' + app} disabled={!native} onClick={() => setExcluded(excludedApps.filter(x => x !== app))}/></li>)}
+          </ul>
+          <form className="excluded-add" onSubmit={e => { e.preventDefault(); addApp(); }}>
+            <input value={appName} onChange={e => setAppName(e.target.value)} placeholder={t.excludedPlaceholder} aria-label={t.excludedPlaceholder} maxLength={200} spellCheck={false} disabled={!native}/>
+            <GlassButton variant="tinted" icon={<Plus size={16}/>} disabled={!native || !appName.trim()} onClick={addApp}>{t.add}</GlassButton>
+          </form>
           <div className="setting-row"><Sun size={21}/><h3>{t.appearance}</h3></div>
           <GlassSegmented options={[{label:t.system, icon:<Monitor size={16}/>},{label:t.light,icon:<Sun size={16}/>},{label:t.dark,icon:<Moon size={16}/>}]} value={theme} onChange={setTheme} aria-label={t.appearance}/>
           <div className="windows-setting"><p>{t.windowsHint}</p><GlassButton variant="tinted" disabled={!native} onClick={() => host?.postMessage({action:'settings'})} icon={<Settings2 size={16}/>}>{t.windows}</GlassButton></div>

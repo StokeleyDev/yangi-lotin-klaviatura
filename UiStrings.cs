@@ -36,7 +36,10 @@ public sealed record Strings(
     string LangSwitcherAutomationName,
     string LangUzAutomationName,
     string LangRuAutomationName,
-    string StatusElevated
+    string StatusElevated,
+    string StatusPaused,
+    string StatusExcluded,
+    string HotkeyUnavailable
 );
 
 public static class UiStrings {
@@ -71,7 +74,10 @@ public static class UiStrings {
         LangSwitcherAutomationName: "Tilni tanlash (UZ/RU)",
         LangUzAutomationName: "O‘zbek tili",
         LangRuAutomationName: "Rus tili",
-        StatusElevated: "{0} administrator huquqi bilan ishlayapti — bu oynada almashtirish ishlamaydi"
+        StatusElevated: "{0} administrator huquqi bilan ishlayapti — bu oynada almashtirish ishlamaydi",
+        StatusPaused: "Pauza — davom ettirish uchun Ctrl + Alt + Pause",
+        StatusExcluded: "{0} istisnolar ro‘yxatida — almashtirish o‘chirilgan",
+        HotkeyUnavailable: "Ctrl + Alt + Pause boshqa dastur tomonidan band"
     );
 
     public static readonly Strings Russian = new(
@@ -105,7 +111,10 @@ public static class UiStrings {
         LangSwitcherAutomationName: "Выбор языка интерфейса (UZ/RU)",
         LangUzAutomationName: "Узбекский язык",
         LangRuAutomationName: "Русский язык",
-        StatusElevated: "{0} запущено от имени администратора — в этом окне замена не работает"
+        StatusElevated: "{0} запущено от имени администратора — в этом окне замена не работает",
+        StatusPaused: "Пауза — продолжить: Ctrl + Alt + Pause",
+        StatusExcluded: "{0} в стоп-листе — замена отключена",
+        HotkeyUnavailable: "Ctrl + Alt + Pause занята другой программой"
     );
 
     public static Strings Get(AppLanguage lang) => lang switch {
