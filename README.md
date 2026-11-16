@@ -60,6 +60,14 @@ Automatic replacement while typing with the Uzbek Latin Windows input language, 
 
 Requires Windows x64, .NET 8 Desktop Runtime and Microsoft Edge WebView2 Evergreen Runtime. The installer supports a per-user installation, desktop shortcut, optional startup and uninstall registration. Close the app before updating. Extract the entire portable ZIP before running it.
 
+## Administrator oynalari / Окна администратора
+
+**O‘zbekcha.** Windows oddiy dasturga administrator huquqi bilan ishlayotgan oynalarga (masalan, administrator sifatida ochilgan PowerShell yoki Vazifalar dispetcheri) klaviatura bosishlarini yuborishga ruxsat bermaydi. Shuning uchun bunday oynada dastur hech narsani almashtirmaydi va holat qatorida buni ko‘rsatadi. Agar shu oynalarda ham almashtirish kerak bo‘lsa, Yangi lotin klaviaturani ham administrator sifatida ishga tushiring.
+
+**Русский.** Windows не позволяет обычной программе отправлять нажатия в окна, запущенные от имени администратора (например, PowerShell от администратора или Диспетчер задач). Поэтому в таких окнах программа ничего не заменяет и сообщает об этом в строке состояния. Если замена нужна и там, запустите Yangi lotin klaviatura тоже от имени администратора.
+
+**English.** Windows blocks a normal process from injecting input into elevated windows (UIPI). The app detects elevated foreground windows, leaves input untouched there and says so in the status line. Run the app elevated if you need replacement in elevated windows.
+
 ## Screenshots
 
 [Light theme](assets/interface-light.png) · [Dark theme](assets/interface-dark.png)

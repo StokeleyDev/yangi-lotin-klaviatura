@@ -35,7 +35,8 @@ public sealed record Strings(
     string MaximizeAutomationName,
     string LangSwitcherAutomationName,
     string LangUzAutomationName,
-    string LangRuAutomationName
+    string LangRuAutomationName,
+    string StatusElevated
 );
 
 public static class UiStrings {
@@ -69,7 +70,8 @@ public static class UiStrings {
         MaximizeAutomationName: "Kattalashtirish",
         LangSwitcherAutomationName: "Tilni tanlash (UZ/RU)",
         LangUzAutomationName: "O‘zbek tili",
-        LangRuAutomationName: "Rus tili"
+        LangRuAutomationName: "Rus tili",
+        StatusElevated: "{0} administrator huquqi bilan ishlayapti — bu oynada almashtirish ishlamaydi"
     );
 
     public static readonly Strings Russian = new(
@@ -102,7 +104,8 @@ public static class UiStrings {
         MaximizeAutomationName: "Развернуть",
         LangSwitcherAutomationName: "Выбор языка интерфейса (UZ/RU)",
         LangUzAutomationName: "Узбекский язык",
-        LangRuAutomationName: "Русский язык"
+        LangRuAutomationName: "Русский язык",
+        StatusElevated: "{0} запущено от имени администратора — в этом окне замена не работает"
     );
 
     public static Strings Get(AppLanguage lang) => lang switch {

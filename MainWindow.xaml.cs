@@ -169,6 +169,7 @@ public partial class MainWindow : Window
         Title = strings.WindowTitle;
         string status = error != null ? strings.StatusErrorPrefix + error :
             !mapper.Enabled ? strings.StatusDisabled :
+            mapper.ElevatedApp is string elevatedApp ? string.Format(strings.StatusElevated, elevatedApp) :
             mapper.LastInputLanguage is ushort lang && lang != 0x0443 ?
                 (language == AppLanguage.Uzbek ? "Win + Space: O‘zbek (lotin) tilini tanlang" : "Win + Пробел: выберите узбекский (латиница)") :
                 strings.StatusEnabled;

@@ -7,13 +7,16 @@ internal sealed class KeyboardMapper {
  private bool rightAltHeld;
  private char previous; private IntPtr previousWindow; private string? undo;
  internal ushort? LastInputLanguage { get; private set; }
+ /// <summary>Last foreground app (other than ours) that runs elevated and therefore is skipped; null when the last app is normal.</summary>
+ internal string? ElevatedApp { get; private set; }
+ private IntPtr checkedWindow; private bool checkedElevated;
 
 
  internal void ResetPending() { previous='\0'; undo=null; }
  internal bool Enabled => hook != IntPtr.Zero;
  internal KeyboardMapper() { callback=OnKey; mouseCallback=OnMouse; }
  internal void Start() { if (Enabled) return; hook=SetWindowsHookEx(WH_KEYBOARD_LL, callback, GetModuleHandle(null), 0); if (hook==IntPtr.Zero) throw new Win32Exception(Marshal.GetLastWin32Error()); mouseHook=SetWindowsHookEx(14, mouseCallback, GetModuleHandle(null), 0); if (mouseHook==IntPtr.Zero) { var error=Marshal.GetLastWin32Error(); UnhookWindowsHookEx(hook); hook=IntPtr.Zero; throw new Win32Exception(error); } }
- internal void Stop() { if (Enabled) { UnhookWindowsHookEx(hook); hook=IntPtr.Zero; } if (mouseHook!=IntPtr.Zero) { UnhookWindowsHookEx(mouseHook); mouseHook=IntPtr.Zero; } rightAltHeld=false; previous='\0'; undo=null; previousWindow=IntPtr.Zero; }
+ internal void Stop() { if (Enabled) { UnhookWindowsHookEx(hook); hook=IntPtr.Zero; } if (mouseHook!=IntPtr.Zero) { UnhookWindowsHookEx(mouseHook); mouseHook=IntPtr.Zero; } rightAltHeld=false; checkedWindow=IntPtr.Zero; checkedElevated=false; ElevatedApp=null; previous='\0'; undo=null; previousWindow=IntPtr.Zero; }
  private IntPtr OnMouse(int code, IntPtr message, IntPtr data) { if (code>=0 && (message.ToInt64()==0x201 || message.ToInt64()==0x204 || message.ToInt64()==0x207)) { previous='\0'; undo=null; } return CallNextHookEx(mouseHook,code,message,data); }
  private IntPtr OnKey(int code, IntPtr message, IntPtr data) {
   if (code<0) return CallNextHookEx(hook,code,message,data);
@@ -24,7 +27,15 @@ internal sealed class KeyboardMapper {
   if (!isDown) return CallNextHookEx(hook,code,message,data);
   if (IsModifier(key.vk)) return CallNextHookEx(hook,code,message,data);
   var window=GetForegroundWindow(); if (window==IntPtr.Zero) return CallNextHookEx(hook,code,message,data);
-  var thread=GetWindowThreadProcessId(window,out _); long layout=GetKeyboardLayout(thread).ToInt64(); LastInputLanguage=(ushort)(layout & 0xffff);
+  var thread=GetWindowThreadProcessId(window,out uint pid);
+  if (pid!=(uint)Environment.ProcessId) {
+   if (window!=checkedWindow) {
+    checkedWindow=window;
+    checkedElevated=!ForegroundProcess.SelfElevated && ForegroundProcess.IsElevated(pid);
+    ElevatedApp=checkedElevated ? ForegroundProcess.ExeName(pid) ?? "?" : null;
+   }
+   if (checkedElevated) { previous='\0'; undo=null; previousWindow=IntPtr.Zero; return CallNextHookEx(hook,code,message,data); }
+  } long layout=GetKeyboardLayout(thread).ToInt64(); LastInputLanguage=(ushort)(layout & 0xffff);
   if ((layout & 0xffff)!=0x0443) { previous='\0'; undo=null; previousWindow=IntPtr.Zero; return CallNextHookEx(hook,code,message,data); }
   if (window != previousWindow) { previous='\0'; undo=null; previousWindow=window; }
   bool shift=Down(0x10), ctrl=Down(0x11), alt=Down(0x12), altgr=rightAltHeld || Down(0xA5), win=Down(0x5B)||Down(0x5C);
