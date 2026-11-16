@@ -4,8 +4,12 @@ using System.Runtime.InteropServices;
 namespace UzbekKeyboard;
 internal sealed class KeyboardMapper {
  private const int WH_KEYBOARD_LL=13, WM_KEYDOWN=0x100, WM_SYSKEYDOWN=0x104, LLKHF_INJECTED=0x10;
- private const uint EVENT_SYSTEM_FOREGROUND=0x0003, EVENT_OBJECT_FOCUS=0x8005, WINEVENT_OUTOFCONTEXT=0;
- private readonly HookProc callback; private readonly WinEventProc winEventCallback; private IntPtr hook; private IntPtr foregroundHook, focusHook;
+ private const uint EVENT_SYSTEM_FOREGROUND=0x0003, EVENT_OBJECT_FOCUS=0x8005, EVENT_OBJECT_LOCATIONCHANGE=0x800B, WINEVENT_OUTOFCONTEXT=0;
+ private const int OBJID_CARET=-8;
+ /// <summary>Caret moves this soon after a key press are caused by typing (the user's or our replacement), not by a click.</summary>
+ private const uint TypingCaretWindowMs=250;
+ private uint lastKeyTime;
+ private readonly HookProc callback; private readonly WinEventProc winEventCallback; private IntPtr hook; private IntPtr foregroundHook, focusHook, caretHook;
  private bool rightAltHeld;
  private char previous; private IntPtr previousWindow; private string? undo;
  internal ushort? LastInputLanguage { get; private set; }
@@ -31,10 +35,20 @@ internal sealed class KeyboardMapper {
   // Out-of-context WinEvents arrive on this (UI) thread's message loop; they replace the old global mouse hook.
   foregroundHook=SetWinEventHook(EVENT_SYSTEM_FOREGROUND,EVENT_SYSTEM_FOREGROUND,IntPtr.Zero,winEventCallback,0,0,WINEVENT_OUTOFCONTEXT);
   focusHook=SetWinEventHook(EVENT_OBJECT_FOCUS,EVENT_OBJECT_FOCUS,IntPtr.Zero,winEventCallback,0,0,WINEVENT_OUTOFCONTEXT);
-  if (foregroundHook==IntPtr.Zero || focusHook==IntPtr.Zero) { Stop(); throw new Win32Exception("SetWinEventHook"); }
+  // Caret moves without a key press (a mouse click inside the same field) must reset a half-typed pair, without a global mouse hook.
+  caretHook=SetWinEventHook(EVENT_OBJECT_LOCATIONCHANGE,EVENT_OBJECT_LOCATIONCHANGE,IntPtr.Zero,winEventCallback,0,0,WINEVENT_OUTOFCONTEXT);
+  if (foregroundHook==IntPtr.Zero || focusHook==IntPtr.Zero || caretHook==IntPtr.Zero) { Stop(); throw new Win32Exception("SetWinEventHook"); }
  }
- internal void Stop() { if (Enabled) { UnhookWindowsHookEx(hook); hook=IntPtr.Zero; } if (foregroundHook!=IntPtr.Zero) { UnhookWinEvent(foregroundHook); foregroundHook=IntPtr.Zero; } if (focusHook!=IntPtr.Zero) { UnhookWinEvent(focusHook); focusHook=IntPtr.Zero; } rightAltHeld=false; layoutTimer?.Stop(); checkedWindow=IntPtr.Zero; checkedElevated=checkedExcluded=false; ElevatedApp=ExcludedApp=null; previous='\0'; undo=null; previousWindow=IntPtr.Zero; }
+ internal void Stop() { if (Enabled) { UnhookWindowsHookEx(hook); hook=IntPtr.Zero; } if (foregroundHook!=IntPtr.Zero) { UnhookWinEvent(foregroundHook); foregroundHook=IntPtr.Zero; } if (focusHook!=IntPtr.Zero) { UnhookWinEvent(focusHook); focusHook=IntPtr.Zero; } if (caretHook!=IntPtr.Zero) { UnhookWinEvent(caretHook); caretHook=IntPtr.Zero; } rightAltHeld=false; layoutTimer?.Stop(); checkedWindow=IntPtr.Zero; checkedElevated=checkedExcluded=false; ElevatedApp=ExcludedApp=null; previous='\0'; undo=null; previousWindow=IntPtr.Zero; }
  private void OnWinEvent(IntPtr winEventHook,uint evt,IntPtr hwnd,int idObject,int idChild,uint thread,uint time) {
+  if (evt==EVENT_OBJECT_LOCATIONCHANGE) {
+   if (idObject!=OBJID_CARET || previous=='\0' && undo==null) return;
+   var foreground=GetForegroundWindow();
+   if (foreground==IntPtr.Zero || thread!=GetWindowThreadProcessId(foreground,out _)) return;
+   if (unchecked(time-lastKeyTime)<TypingCaretWindowMs) return;
+   previous='\0'; undo=null;
+   return;
+  }
   // Focus moved (another window, another control, a click into a different field): a half-typed pair must not combine across it.
   previous='\0'; undo=null;
   if (evt==EVENT_SYSTEM_FOREGROUND) { previousWindow=IntPtr.Zero; checkedWindow=IntPtr.Zero; }
@@ -89,6 +103,8 @@ internal sealed class KeyboardMapper {
   bool isDown=message.ToInt64()==WM_KEYDOWN || message.ToInt64()==WM_SYSKEYDOWN;
   if (key.vk==0xA5 || (key.vk==0x12 && (key.flags & 1)!=0)) rightAltHeld=isDown;
   if (!isDown || paused) return CallNextHookEx(hook,code,message,data);
+  lastKeyTime=key.time;
+  if (IsNavigation(key.vk)) { previous='\0'; undo=null; return CallNextHookEx(hook,code,message,data); }
   if (IsModifier(key.vk)) return CallNextHookEx(hook,code,message,data);
   var window=GetForegroundWindow(); if (window==IntPtr.Zero) return CallNextHookEx(hook,code,message,data);
   var thread=GetWindowThreadProcessId(window,out uint pid);
@@ -158,6 +174,7 @@ internal sealed class KeyboardMapper {
   }
   return GetKeyboardLayout(thread);
  }
+ private static bool IsNavigation(uint vk)=>vk is (>=0x21 and <=0x28) or 0x2E or 0x0D or 0x09 or 0x1B; // PgUp..Down arrows, Delete, Enter, Tab, Esc
  private static bool IsModifier(uint vk)=>vk is 0x10 or 0x11 or 0x12 or 0x14 or (>=0xA0 and <=0xA5) or 0x5B or 0x5C;
  private static char Translate(Kbd key,bool shift,IntPtr layout) {
   var state=new byte[256];

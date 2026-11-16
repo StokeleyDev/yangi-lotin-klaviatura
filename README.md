@@ -77,6 +77,14 @@ Requires Windows x64, .NET 8 Desktop Runtime and Microsoft Edge WebView2 Evergre
 
 **English.** For console hosts the input layout is read from the focus window via GetGUIThreadInfo. Some Windows builds still report a stale layout for consoles; replacement may then not trigger there.
 
+## Kursor va sichqoncha / Курсор и мышь
+
+**O‘zbekcha.** Yarim terilgan birikma (masalan, `s`) kursor boshqa joyga ko‘chirilganda bekor qilinadi: navigatsiya tugmalari (strelkalar, Home, End, PgUp/PgDn, Delete, Enter, Tab, Esc) va sichqoncha bilan bosish orqali. Sichqonchani bosish Windows’ning kursor (caret) hodisalari orqali aniqlanadi. Ba’zi ilovalar (ayrim brauzerlar, Electron, terminal va o‘yinlar) bu hodisalarni yubormaydi — ularda maydon ichida bosgandan keyin `s` + `h` baribir `ş` bo‘lishi mumkin. Bunday holda Backspace almashtirishni bekor qiladi.
+
+**Русский.** Недописанная пара (например, `s`) сбрасывается, если курсор переместили: навигационными клавишами (стрелки, Home, End, PgUp/PgDn, Delete, Enter, Tab, Esc) или щелчком мыши. Щелчок определяется по событиям каретки Windows (EVENT_OBJECT_LOCATIONCHANGE для OBJID_CARET), глобальный хук мыши не используется. Некоторые приложения (часть браузеров, Electron-приложения, терминалы, игры) таких событий не отправляют — в них после щелчка внутри того же поля `s` + `h` всё ещё может дать `ş`. Backspace сразу после замены отменяет её.
+
+**English.** A pending pair is reset by navigation keys and by caret moves not caused by typing (WinEvent caret location changes). Apps that do not report caret events may still combine a pair across a mouse click inside the same field.
+
 ## Screenshots
 
 [Light theme](assets/interface-light.png) · [Dark theme](assets/interface-dark.png)
