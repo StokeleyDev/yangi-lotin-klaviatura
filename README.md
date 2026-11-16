@@ -68,6 +68,14 @@ Requires Windows x64, .NET 8 Desktop Runtime and Microsoft Edge WebView2 Evergre
 
 **English.** Windows blocks a normal process from injecting input into elevated windows (UIPI). The app detects elevated foreground windows, leaves input untouched there and says so in the status line. Run the app elevated if you need replacement in elevated windows.
 
+## Konsollar / Консоли
+
+**O‘zbekcha.** Klassik konsol (`ConsoleWindowClass`) va Windows Terminal (`CASCADIA_HOSTING_WINDOW_CLASS`) oynalarida kiritish tili fokusdagi oyna orqali aniqlanadi. Ba’zi Windows versiyalarida konsol joriy tilni noto‘g‘ri bildirishi mumkin: bunda almashtirish ishlamaydi yoki holat qatorida “Win + Space” maslahati chiqadi. Bunday holda tilni konsolda qayta almashtiring yoki konsolni istisnolar ro‘yxatiga qo‘shing.
+
+**Русский.** В классической консоли (`ConsoleWindowClass`) и Windows Terminal (`CASCADIA_HOSTING_WINDOW_CLASS`) раскладка определяется по окну с фокусом (GetGUIThreadInfo), а не по потоку окна верхнего уровня. На некоторых версиях Windows консоль всё равно сообщает раскладку неверно: тогда замена в ней не срабатывает или в строке состояния появляется подсказка «Win + Пробел». В этом случае переключите язык ещё раз внутри консоли или добавьте её exe (`conhost.exe`, `windowsterminal.exe`) в стоп-лист.
+
+**English.** For console hosts the input layout is read from the focus window via GetGUIThreadInfo. Some Windows builds still report a stale layout for consoles; replacement may then not trigger there.
+
 ## Screenshots
 
 [Light theme](assets/interface-light.png) · [Dark theme](assets/interface-dark.png)

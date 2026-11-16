@@ -47,7 +47,7 @@ internal sealed class KeyboardMapper {
     ExcludedApp=checkedExcluded ? exe : null;
    }
    if (checkedElevated || checkedExcluded) { previous='\0'; undo=null; previousWindow=IntPtr.Zero; return CallNextHookEx(hook,code,message,data); }
-  } long layout=GetKeyboardLayout(thread).ToInt64(); LastInputLanguage=(ushort)(layout & 0xffff);
+  } long layout=InputLayout(window,thread).ToInt64(); LastInputLanguage=(ushort)(layout & 0xffff);
   if ((layout & 0xffff)!=0x0443) { previous='\0'; undo=null; previousWindow=IntPtr.Zero; return CallNextHookEx(hook,code,message,data); }
   if (window != previousWindow) { previous='\0'; undo=null; previousWindow=window; }
   bool shift=Down(0x10), ctrl=Down(0x11), alt=Down(0x12), altgr=rightAltHeld || Down(0xA5), win=Down(0x5B)||Down(0x5C);
@@ -91,6 +91,25 @@ internal sealed class KeyboardMapper {
   passwordCheck=check;
   try { return check.Wait(60) && check.Result; } catch { return false; }
  }
+ private static bool IsConsole(IntPtr window) {
+  var name=new System.Text.StringBuilder(64);
+  if (GetClassName(window,name,name.Capacity)==0) return false;
+  string cls=name.ToString();
+  return cls is "ConsoleWindowClass" or "CASCADIA_HOSTING_WINDOW_CLASS";
+ }
+ /// <summary>Layout of the thread that owns keyboard focus. For console hosts (conhost, Windows Terminal) the
+ /// top-level window thread is not always the one with the active layout, so the focus window is used instead.</summary>
+ private static IntPtr InputLayout(IntPtr window,uint thread) {
+  if (IsConsole(window)) {
+   var info=new GUITHREADINFO { cbSize=Marshal.SizeOf<GUITHREADINFO>() };
+   if (GetGUIThreadInfo(thread,ref info) && info.hwndFocus!=IntPtr.Zero) {
+    uint focusThread=GetWindowThreadProcessId(info.hwndFocus,out _);
+    IntPtr focusLayout=focusThread==0 ? IntPtr.Zero : GetKeyboardLayout(focusThread);
+    if (focusLayout!=IntPtr.Zero) return focusLayout;
+   }
+  }
+  return GetKeyboardLayout(thread);
+ }
  private static bool IsModifier(uint vk)=>vk is 0x10 or 0x11 or 0x12 or 0x14 or (>=0xA0 and <=0xA5) or 0x5B or 0x5C;
  private static char Translate(Kbd key,bool shift,IntPtr layout) {
   var state=new byte[256];
@@ -104,6 +123,8 @@ internal sealed class KeyboardMapper {
  private static bool Down(int v)=>(GetAsyncKeyState(v)&0x8000)!=0;
  private delegate IntPtr HookProc(int n,IntPtr w,IntPtr l);
  [StructLayout(LayoutKind.Sequential)] private struct Kbd { public uint vk,scan,flags,time; public UIntPtr extra; }
+ [StructLayout(LayoutKind.Sequential)] private struct RECT { public int left,top,right,bottom; }
+ [StructLayout(LayoutKind.Sequential)] private struct GUITHREADINFO { public int cbSize; public uint flags; public IntPtr hwndActive,hwndFocus,hwndCapture,hwndMenuOwner,hwndMoveSize,hwndCaret; public RECT rcCaret; }
  [StructLayout(LayoutKind.Sequential)] private struct INPUT { public uint type; public InputUnion union; }
  [StructLayout(LayoutKind.Explicit)] private struct InputUnion { [FieldOffset(0)] public KEYBDINPUT ki; [FieldOffset(0)] public MOUSEINPUT mi; }
  [StructLayout(LayoutKind.Sequential)] private struct KEYBDINPUT { public ushort wVk,wScan; public uint dwFlags,time; public UIntPtr extra; }
@@ -115,6 +136,8 @@ internal sealed class KeyboardMapper {
  [DllImport("user32.dll")] private static extern IntPtr GetForegroundWindow();
  [DllImport("user32.dll")] private static extern uint GetWindowThreadProcessId(IntPtr hwnd,out uint pid);
  [DllImport("user32.dll")] private static extern IntPtr GetKeyboardLayout(uint thread);
+ [DllImport("user32.dll")] private static extern bool GetGUIThreadInfo(uint thread,ref GUITHREADINFO info);
+ [DllImport("user32.dll",CharSet=CharSet.Unicode)] private static extern int GetClassName(IntPtr hwnd,System.Text.StringBuilder name,int max);
  [DllImport("user32.dll")] private static extern short GetAsyncKeyState(int key);
  [DllImport("user32.dll")] private static extern short GetKeyState(int key);
  [DllImport("user32.dll")] private static extern int ToUnicodeEx(uint vk,uint scan,byte[] state,[Out] char[] buffer,int size,uint flags,IntPtr layout);
