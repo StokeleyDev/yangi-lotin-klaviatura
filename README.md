@@ -6,7 +6,7 @@
 
 **Новый узбекский алфавит на Windows:** клавиатура и преобразование текста с поддержкой букв **ş, ç, ö, ğ**. Интерфейс на узбекском и русском языках.
 
-Joriy versiya / Текущая версия: **1.2.5**.
+Joriy versiya / Текущая версия: **1.3.0**.
 
 ## Yuklab olish / Скачать
 
@@ -29,19 +29,20 @@ Windows tizimida **O‘zbek (lotin)** kiritish tilini tanlang va dasturdagi avto
 | o‘ yoki o' | ö | o‘zbek → özbek |
 | g‘ yoki g' | ğ | g‘oya → ğoya |
 
-Tayyor matn uchun dasturdagi matn maydoniga yozing yoki matnni joylang va **O‘zgartirish** tugmasini bosing. Dastur kirill yozuvini to‘liq lotinga o‘girish uchun emas, yuqoridagi lotin harf birikmalarini almashtirish uchun mo‘ljallangan.
+Tayyor matn uchun dasturdagi matn maydoniga yozing yoki matnni joylang, yo‘nalishni tanlang (**Kirill ↔ Lotin (1995) ↔ Yangi lotin**) va **O‘girish** tugmasini bosing. Havolalar, email, `@teg` va istisno so‘zlar saqlanadi. Istalgan ilovada belgilangan matnni joyida o‘girish uchun **Ctrl + Alt + L** bosing.
 
 ### Yangi lotin klaviatura qaysi Windows tizimida ishlaydi?
 
 Windows x64, **.NET Desktop Runtime 8** va **Microsoft Edge WebView2 Runtime** talab qilinadi. O‘rnatish uchun yuqoridagi o‘rnatuvchini yuklab oling yoki portable ZIP arxivini to‘liq oching.
 
-## Новое в 1.2.5
+## Новое в 1.3.0
 
-- Пауза по Ctrl+Alt+Pause и список приложений-исключений в настройках.
-- Поля паролей и окна, запущенные от администратора, пропускаются.
-- При закрытии окно сворачивается в трей, замена продолжает работать.
-- o‘/g‘ работают со всеми видами апострофа; Shift и CapsLock не сбрасывают набор.
-- Установщик вдвое меньше; релизы собираются из исходников, с контрольными суммами SHA-256.
+- 3-сторонний конвертер (**Кириллица ↔ Латиница 1995 ↔ Новая латиница**) с защитой URL, email, `@тегов`, путей и слов-исключений.
+- Конвертация выделенного текста на месте в любом приложении по **Ctrl + Alt + L** (с сохранением буфера обмена).
+- Режим работы поверх **EN-раскладки**, прямой ввод через **Right Alt + S / C / O / G / '** и опциональный «умный тутуқ» (`ʼ`).
+- Защита от повторного запуска, тихий автозапуск в трей (`--tray`) с ленивой загрузкой WebView2 и полное сохранение всех настроек.
+- Удобный хоткей паузы по умолчанию **Ctrl + Alt + U** (выбор пресета в настройках), двуязычный установщик (`UZ | RU`) с проверкой WebView2 и проверка обновлений.
+- Обновлённый минималистичный интерфейс и сгруппированные настройки.
 
 Полный список — в [CHANGELOG.md](CHANGELOG.md).
 
